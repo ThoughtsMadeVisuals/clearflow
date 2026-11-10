@@ -2,8 +2,8 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Money Tracker</title>
-<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#141513" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ebf2f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#07171d" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -11,81 +11,150 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&display=swap">
 <style>
-:root{--s1:#2a78d6;--s2:#1baf7a;color-scheme:light;--bg:#f6f5f1;--card:#fff;--tx:#1d1d1b;--mut:#6b6a64;--bd:#e4e2da;--ac:#2f6f5e;--acb:#e3f0ec;--warn:#b4521f;--wb:#fbeadf;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--s1:#3987e5;--s2:#199e70;color-scheme:dark;--bg:#141513;--card:#1e201d;--tx:#eeede8;--mut:#a09f97;--bd:#2f322d;--ac:#6fc2a8;--acb:#233a33;--warn:#f0a26f;--wb:#3a2a1f}}
-:root[data-theme="dark"]{--s1:#3987e5;--s2:#199e70;color-scheme:dark;--bg:#141513;--card:#1e201d;--tx:#eeede8;--mut:#a09f97;--bd:#2f322d;--ac:#6fc2a8;--acb:#233a33;--warn:#f0a26f;--wb:#3a2a1f}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
+/* Layout: a water tank you drain by spending and pools you fill by saving; one column of cards under a sticky gauge bar */
+:root{
+ --bg:#ebf2f4;--card:#fff;--tx:#0e2730;--mut:#52707a;--bd:#d0dfe5;
+ --water:#22a3cf;--water2:#0a5f85;--foam:#e8f8fd;--glass:#f5fafc;
+ --ac:#0a5f85;--acb:#dbeff6;--onac:#fff;
+ --pipe:#4b5fa8;--save:#178f6e;--amber:#cf8418;--warn:#c04a28;--wb:#fbe6dd;--okb:#d9f2e8;
+ --fd:"Bricolage Grotesque",ui-rounded,"Segoe UI",system-ui,sans-serif;
+ --fb:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+ color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#07171d;--card:#0e242c;--tx:#e1f0f4;--mut:#8eb0bb;--bd:#1c3b46;
+ --water:#38bde6;--water2:#0f6b92;--foam:#bfeefc;--glass:#0a1d24;
+ --ac:#5ccbf0;--acb:#12384a;--onac:#05222c;
+ --pipe:#8ea2e6;--save:#40c69d;--amber:#eaa944;--warn:#f08b66;--wb:#3a2018;--okb:#103a2f;color-scheme:dark}}
+:root[data-theme="dark"]{
+ --bg:#07171d;--card:#0e242c;--tx:#e1f0f4;--mut:#8eb0bb;--bd:#1c3b46;
+ --water:#38bde6;--water2:#0f6b92;--foam:#bfeefc;--glass:#0a1d24;
+ --ac:#5ccbf0;--acb:#12384a;--onac:#05222c;
+ --pipe:#8ea2e6;--save:#40c69d;--amber:#eaa944;--warn:#f08b66;--wb:#3a2018;--okb:#103a2f;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
-.wrap{max-width:760px;margin:0 auto;padding:16px}
-h1{font-size:20px;margin:0}
-.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 var(--fb)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:780px;margin:0 auto;padding-block:0 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,.big,.gn{font-family:var(--fd);text-wrap:balance}
+h1{font-size:21px;margin:0;font-weight:700;letter-spacing:-.2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-block:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.gauge{width:38px;height:38px;border-radius:50%;border:2px solid var(--water2);background:var(--glass);overflow:hidden;padding:0;flex:none;cursor:pointer}
+.gauge canvas{display:block;width:100%;height:100%}
+.chip{font-size:12px;font-weight:600;color:var(--ac);background:var(--acb);border-radius:99px;padding:2px 9px;white-space:nowrap}
 .mn{display:flex;align-items:center;gap:6px}
-.mn b{min-width:130px;text-align:center}
+.mn b{min-width:128px;text-align:center;font-weight:600}
 button,input,select{font:inherit;color:var(--tx)}
-button{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:6px 12px;cursor:pointer}
-button.p{background:var(--ac);border-color:var(--ac);color:var(--bg);font-weight:600}
+button{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:6px 12px;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+button.p{background:var(--ac);border-color:var(--ac);color:var(--onac);font-weight:600}
 button.g{border:0;background:none;color:var(--mut);padding:4px 8px}
-input,select{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px;min-width:0}
-.tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:4px}
-.tabs{overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
-.tabs button{flex:1 0 auto;border:0;background:none;color:var(--mut);white-space:nowrap;padding:6px 5px;font-size:13.5px}
+button.warnb{background:var(--warn);border-color:var(--warn);color:var(--card);font-weight:600}
+input,select{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px;min-width:0}
+.tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:4px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1 0 auto;border:0;background:none;color:var(--mut);white-space:nowrap;padding:6px 8px;font-size:13.5px}
 .tabs button.on{background:var(--acb);color:var(--ac);font-weight:600}
-.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
-@media(min-width:600px){.cards{grid-template-columns:repeat(4,1fr)}}
-.c{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px}
 .c small{color:var(--mut);display:block}
-.c b{font-size:18px}
-.box{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
-.box h2{font-size:15px;margin:0 0 10px}
+.c b{font-size:18px;font-variant-numeric:tabular-nums}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:14px}
+.box h2{font-size:16px;margin:0 0 10px;font-weight:700}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--bd)}
 .row:first-of-type{border-top:0}
 .row .l{min-width:0}.row .l div:first-child{font-weight:600;overflow:hidden;text-overflow:ellipsis}
 .m{color:var(--mut);font-size:13px}
-.r{text-align:right;white-space:nowrap}
+.r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .form{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
 .form .w{grid-column:1/-1}
 @media(min-width:600px){.form{grid-template-columns:repeat(4,1fr)}}
-.bar{height:8px;background:var(--bd);border-radius:5px;overflow:hidden;margin:6px 0}
-.bar i{display:block;height:100%;background:var(--ac)}
+.bar{height:8px;background:var(--acb);border-radius:5px;overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--water2),var(--water));border-radius:5px}
 .bar.over i{background:var(--warn)}
-.tag{background:var(--wb);color:var(--warn);border-radius:6px;padding:1px 6px;font-size:12px;margin-left:6px}
+.tag{background:var(--wb);color:var(--warn);border-radius:6px;padding:1px 6px;font-size:12px;margin-left:6px;white-space:nowrap}
+.tag.ok{background:var(--okb);color:var(--save)}
 .dh{display:flex;justify-content:space-between;font-weight:600;margin:12px 0 2px}
 .off{opacity:.5}
 .empty{color:var(--mut);padding:8px 0}
 .sec{display:none}.sec.on{display:block}
-.bl{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:14px}.bl span:first-child{width:104px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bl .bar{flex:1;margin:0}.bl span:last-child{width:132px;flex:none;text-align:right;white-space:nowrap}
+.bl{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:14px}.bl span:first-child{width:104px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bl .bar{flex:1;margin:0}.bl span:last-child{width:132px;flex:none;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .bl em{font-style:normal;color:var(--mut);font-size:12px;display:inline-block;width:38px;margin-left:4px}
-.hero .big{font-size:34px;font-weight:700;letter-spacing:-.5px;line-height:1.15;margin:2px 0 6px;font-variant-numeric:tabular-nums}
-.hero .big.neg{color:var(--warn)}
-.hero .ln{margin:0 0 14px}
-.sbar{position:relative;display:flex;gap:2px;height:16px;border-radius:6px;overflow:hidden}
-.sbar i{min-width:4px}
-.s1{background:var(--s1)}.s2{background:var(--s2)}.s0{background:var(--bd)}
-.bm{position:absolute;top:0;bottom:0;width:2px;background:var(--tx);transform:translateX(-1px)}
-.lg{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--mut);margin-top:10px}
+/* Tank hero */
+.hero{display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;align-items:start}
+@media(min-width:600px){.hero{grid-template-columns:170px minmax(0,1fr);gap:24px}}
+.tank{position:relative;height:250px;border:2px solid var(--water2);border-radius:22px 22px 28px 28px;background:var(--glass);overflow:hidden}
+.hero.low .tank{border-color:var(--amber)}.hero.dry .tank{border-color:var(--warn)}
+.tank canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.marks span{position:absolute;right:0;left:0;border-top:1px dashed var(--bd);height:0}
+.marks b{position:absolute;right:6px;top:-17px;font-size:10.5px;font-weight:600;color:var(--mut);background:var(--glass);padding:0 3px;border-radius:4px;font-variant-numeric:tabular-nums}
+.tnote{position:absolute;inset:auto 0 12px;text-align:center;font-size:12px;font-weight:600;color:var(--mut)}
+.hero.dry .tnote{color:var(--warn)}
+.hside{min-width:0}
+.big{font-size:34px;font-weight:700;letter-spacing:-.6px;line-height:1.1;margin:4px 0 2px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.big.neg{color:var(--warn)}
+.pct{font-size:13px;font-weight:600;color:var(--ac)}.hero.low .pct{color:var(--amber)}
+.ln{margin:10px 0 12px}
+.flow{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--acb);gap:2px}
+.flow i{display:block;min-width:4px}
+.f1{background:var(--pipe)}.f2{background:var(--water)}.f3{background:var(--save)}.f0{background:var(--acb);box-shadow:inset 0 0 0 1px var(--bd)}
+.lg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--mut);margin-top:10px}
 .lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-.lg i.bmk{width:2px;border-radius:0;height:12px;background:var(--tx)}
-.lg b{color:var(--tx);font-weight:600;margin-left:6px}
+.lg b{color:var(--tx);font-weight:600;margin-left:6px;font-variant-numeric:tabular-nums}
 .bud{margin-top:12px}.bud .g{padding:4px 0;text-decoration:underline}.bud input{width:120px;margin-left:6px;padding:6px}
+@media(max-width:420px){.hero{grid-template-columns:1fr}.tank{height:170px;max-width:100%}.big{font-size:30px}}
+/* Game */
+.game{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.game .box{margin:0}.game .wide{grid-column:1/-1}
+@media(max-width:480px){.game{grid-template-columns:1fr}}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.gn{font-size:24px;font-weight:700;margin:2px 0 4px}
+.xp{height:10px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.bdg{display:flex;gap:8px;align-items:center;padding:8px;border-radius:12px;border:1px dashed var(--bd);opacity:.55}
+.bdg svg{width:26px;height:26px;flex:none;fill:var(--bd)}
+.bdg span{display:flex;flex-direction:column;min-width:0}.bdg b{font-size:13.5px}.bdg small{font-size:12px;color:var(--mut)}
+.bdg.on{opacity:1;border-style:solid;border-color:var(--water);background:var(--acb)}.bdg.on svg{fill:var(--water)}
+/* Tiles */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .tiles .c{text-align:left;display:flex;flex-direction:column;gap:2px;cursor:pointer}
-.tiles .c:hover{border-color:var(--ac)}
+.tiles .c:hover{border-color:var(--water)}
 .tiles .c:last-child:nth-child(odd){grid-column:1/-1}
-@media(min-width:600px){.tiles{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.tiles .c:last-child:nth-child(odd){grid-column:auto}}
+@media(min-width:600px){.tiles{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}.tiles .c:last-child:nth-child(odd){grid-column:auto}}
 .two{display:grid;gap:14px;margin-bottom:14px}.two .box{margin:0}
 @media(min-width:600px){.two{grid-template-columns:1fr 1fr}}
+/* Pools */
+.pools{display:grid;gap:12px}
+.pool{display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;padding:12px;border:1px solid var(--bd);border-radius:14px}
+.pool.full{border-color:var(--save)}
+.vessel{position:relative;height:110px;border:2px solid var(--water2);border-top-width:0;border-radius:6px 6px 22px 22px;background:var(--glass);overflow:hidden}
+.pool.full .vessel{border-color:var(--save)}
+.vessel .fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(var(--water),var(--water2));transition:height .9s cubic-bezier(.3,1.4,.5,1)}
+.pool.full .fill{background:linear-gradient(var(--save),var(--water2))}
+.vessel .fill::before{content:"";position:absolute;left:-50%;top:-6px;width:200%;height:12px;background:radial-gradient(circle at 25% 100%,transparent 6px,var(--water) 7px) 0 0/24px 12px repeat-x;animation:ripple 3s linear infinite}
+.pool.full .fill::before{background:radial-gradient(circle at 25% 100%,transparent 6px,var(--save) 7px) 0 0/24px 12px repeat-x}
+.vessel span{position:absolute;inset:auto 0 6px;text-align:center;font-size:12px;font-weight:700;color:var(--tx);mix-blend-mode:normal;text-shadow:0 0 4px var(--card)}
+@keyframes ripple{to{transform:translateX(24px)}}
+.pb{min-width:0}.ph{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.ph b{font-size:15.5px;overflow-wrap:anywhere}
+.pb form input{width:120px}
+.pool .acts .g{padding-left:0}
+/* Toast */
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);text-align:center;transition:opacity .25s,transform .25s;z-index:20}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast.drain{background:var(--water2);color:#fff}.toast.fill{background:var(--save);color:#fff}.toast.lvl{background:var(--ac);color:var(--onac)}
+/* Existing feature styles */
 .foot{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:13px;gap:8px;flex-wrap:wrap}
 .foot input{width:70px;padding:4px 6px}
-[hidden]{display:none!important}
 .sync summary{font-weight:600;font-size:15px;cursor:pointer}
 .row.editing{background:var(--acb);border-radius:8px;padding:8px}
 .scan .sh{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
-.up{position:relative;display:inline-flex;align-items:center;gap:8px;background:var(--acb);color:var(--ac);border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}
-.up:focus-within{outline:2px solid var(--ac);outline-offset:2px}
+.up{position:relative;display:inline-flex;align-items:center;gap:8px;background:var(--acb);color:var(--ac);border-radius:10px;padding:8px 14px;font-weight:600;cursor:pointer}
+.up:focus-within{outline:2px solid var(--water);outline-offset:2px}
 .up input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
-.it{border:1px solid var(--bd);border-radius:10px;padding:10px;margin-top:10px}
+.it{border:1px solid var(--bd);border-radius:12px;padding:10px;margin-top:10px}
 .it.dim{opacity:.55}
 .it .t{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .it .t input[type=text]{flex:1}
@@ -93,23 +162,23 @@ input,select{background:var(--card);border:1px solid var(--bd);border-radius:8px
 @media(max-width:600px){.it .g3{grid-template-columns:1fr 1fr}}
 .fl{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}.fl input{color:var(--tx)}
 .cs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
-.cs>div{display:flex;flex-direction:column;gap:2px;align-items:flex-start;background:var(--bg);border-radius:10px;padding:10px}
-.cs b{font-size:18px}.cs button{margin-top:6px}
+.cs>div{display:flex;flex-direction:column;gap:2px;align-items:flex-start;background:var(--bg);border-radius:12px;padding:10px}
+.cs b{font-size:18px;font-variant-numeric:tabular-nums}.cs button{margin-top:6px}
 @media(max-width:480px){.cs{grid-template-columns:1fr}}
 .ch{margin-top:10px}.ch summary{cursor:pointer;padding:4px 0}
-.tag.ok{background:var(--acb);color:var(--ac)}
 .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
 input[type=checkbox]{width:18px;height:18px;accent-color:var(--ac);flex:none}
-</style></head><body><div class="wrap">
-<div class="top"><h1>Money Tracker</h1>
+@media (prefers-reduced-motion:reduce){.vessel .fill::before{animation:none}.vessel .fill,.toast{transition:none}}
+</style></head><body>
+<div class="wrap">
+<div class="top"><div class="brand"><button class="gauge" onclick="go('ov')" aria-label="Tank level, open overview"><canvas id="gauge" class="wv"></canvas></button><h1>Money Tracker</h1><span class="chip" id="lvchip"></span></div>
 <div class="mn"><button onclick="shift(-1)" aria-label="Previous month">‹</button><b id="ml"></b><button onclick="shift(1)" aria-label="Next month">›</button></div></div>
-<div class="tabs"><button data-t="ov" class="on">Overview</button><button data-t="sb">Bills</button><button data-t="sp">Spending</button><button data-t="cd">Payments</button><button data-t="co">Company</button></div>
-
+<div class="tabs"><button data-t="ov" class="on">Overview</button><button data-t="sp">Spending</button><button data-t="sb">Bills</button><button data-t="sv">Savings</button><button data-t="cd">Payments</button><button data-t="co">Company</button></div>
 <div id="ov" class="sec on"></div>
 
 <div id="sb" class="sec">
 <form class="form" id="sf" onsubmit="addSub(event)">
-<input class="w" name="nm" placeholder="Name (e.g. Netflix, gym, rent)" required>
+<input class="w" name="nm" placeholder="Name (e.g. Netflix, gym, rent)" id="sub-name" required>
 <input name="amt" type="number" step="0.01" min="0" placeholder="Amount" required>
 <select name="cycle"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="yearly">Yearly</option></select>
 <input name="next" type="date" required title="Next bill date">
@@ -148,15 +217,23 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--ac);flex:none}
 <button class="p w" id="cbtn">Add card</button><button type="button" class="w" id="ccx" hidden onclick="endCard()">Cancel</button></form>
 <div id="cdl"></div></div>
 
+<div id="sv" class="sec">
+<p class="m" style="margin:0 0 12px">Pools are things you are saving for. Every pour comes out of this month's tank, so it lowers what's left to spend, and fills the pool toward its goal.</p>
+<form class="form" id="pf" onsubmit="addPool(event)">
+<input class="w" name="nm" id="pool-name" placeholder="Pool name (e.g. Emergency fund, Japan trip)" required maxlength="60">
+<label class="fl w">Goal amount<input name="tg" id="pool-target" type="number" step="0.01" min="0.01" placeholder="e.g. 5000" required></label>
+<button class="p w">Create pool</button></form>
+<div class="box" id="pl"></div></div>
 <details class="box sync"><summary>Backup and spreadsheet sync</summary><p class="m" style="margin:10px 0">Your data is stored only on this device. Download a full backup now and then, and use it to move your data to another phone or computer.</p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px"><button class="p" onclick="backup()">Download full backup</button><label class="up" style="padding:6px 12px">Restore from backup<input type="file" accept=".json,application/json" onchange="restore(this)"></label></div><p class="m" style="margin:10px 0">Export CSVs that match the Google Sheet tabs, or import rows from them. Imports add new rows and skip duplicates.</p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button onclick="exp('subs')">Export subscriptions</button><button onclick="exp('exp')">Export spending</button><button onclick="expCo()">Export company</button><label class="m">Import CSV <input type="file" accept=".csv,.tsv,.txt" multiple onchange="imp(this.files);this.value=''"></label></div></details>
 <div class="foot"><span id="st"></span><span>Currency <input id="cur" maxlength="4" aria-label="Currency symbol"></span></div>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 const SC=["Streaming","Software","Music","Gaming","Utilities","Insurance","Fitness","Rent","Other"];
 const EC=["Food","Coffee","Groceries","Transport","Bills","Shopping","Health","Fun","Other"];
 const CC=["Travel","Meals","Supplies","Software","Equipment","Marketing","Other"];
 const F={monthly:1,weekly:52/12,yearly:1/12};
-let S={cur:"RM",budget:0,subs:[],exp:[],co:[],cards:[],wallets:[],paid:{},lastPay:""};
+let S={cur:"RM",budget:0,subs:[],exp:[],co:[],cards:[],wallets:[],paid:{},lastPay:"",pools:[]};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const iso=d=>d.toLocaleDateString("en-CA");
@@ -228,19 +305,19 @@ function renderCards(){const el=$("#cdl");
 let editSub=null;
 function addSub(e){e.preventDefault();const f=e.target.elements;
  const o={name:f.nm.value.trim(),amt:+f.amt.value,cycle:f.cycle.value,next:f.next.value,cat:f.cat.value,pay:f.pay.value};S.lastPay=f.pay.value;
- if(editSub){const s=S.subs.find(s=>s.id===editSub);if(s)Object.assign(s,o)}else S.subs.push(Object.assign({id:uid(),on:true},o));
- endEdit();save()}
+ const isNew=!editSub;if(editSub){const s=S.subs.find(s=>s.id===editSub);if(s)Object.assign(s,o)}else S.subs.push(Object.assign({id:uid(),on:true},o));
+ endEdit();save();if(isNew)fx(`New bill pipe: ${money(mo(o))} a month`,"drain")}
 function editS(id){const s=S.subs.find(s=>s.id===id);if(!s)return;const fm=$("#sf"),f=fm.elements;editSub=id;
  f.nm.value=s.name;f.amt.value=s.amt;f.cycle.value=s.cycle;f.next.value=iso(nextDue(s));
  if(![...f.cat.options].some(o=>o.value===s.cat))f.cat.insertAdjacentHTML("beforeend",`<option>${esc(s.cat)}</option>`);f.cat.value=s.cat;f.pay.value=hasCard(s.pay)?s.pay:"";
  $("#sbtn").textContent="Save changes";$("#scx").hidden=false;render();
  fm.scrollIntoView({behavior:"smooth",block:"start"});f.nm.focus({preventScroll:true})}
 function endEdit(){editSub=null;$("#sf").reset();defaults();$("#sbtn").textContent="Add subscription";$("#scx").hidden=true;render()}
-function addExp(e){e.preventDefault();const f=e.target.elements;
+function addExp(e){e.preventDefault();const f=e.target.elements,amtV=+f.amt.value;
  S.exp.push({id:uid(),amt:+f.amt.value,cat:f.cat.value,date:f.date.value,note:f.note.value.trim(),pay:f.pay.value});S.lastPay=f.pay.value;
- const d=f.date.value;e.target.reset();defaults();f.date.value=d;save();render()}
+ const d=f.date.value;e.target.reset();defaults();f.date.value=d;save();render();fx(`−${money(amtV)} drained from your tank`,"drain")}
 function delSub(id){S.subs=S.subs.filter(s=>s.id!==id);save();if(editSub===id)endEdit();else render()}
-function delExp(id){S.exp=S.exp.filter(x=>x.id!==id);save();render()}
+function delExp(id){const x=S.exp.find(x=>x.id===id);S.exp=S.exp.filter(x=>x.id!==id);save();render();if(x)fx(`+${money(x.amt)} back in your tank`,"fill")}
 function tog(id){const s=S.subs.find(s=>s.id===id);s.on=s.on===false;save();render()}
 function addCo(e){e.preventDefault();const f=e.target.elements;
  S.co.push({id:uid(),amt:+f.amt.value,cat:f.cat.value,date:f.date.value,note:f.note.value.trim(),re:false,pay:f.pay.value});S.lastPay=f.pay.value;
@@ -260,6 +337,66 @@ function payBox(ex){const by={};ex.forEach(e=>{const n=cardName(e.pay)||"Cash";b
  if(!L.length)return "";const t=L.reduce((a,x)=>a+x[1],0),mx=L[0][1];
  return `<div class="box"><h2>How you paid (daily spending)</h2>`+L.map(([n,v])=>`<div class="bl"><span title="${esc(n)}">${esc(n)}</span><div class="bar"><i style="width:${v/mx*100}%"></i></div><span>${money(v)}<em>${Math.round(v/t*100)}%</em></span></div>`).join("")+`</div>`}
 function when(d){const n=days(d);return n===0?"today":n===1?"tomorrow":n===-1?"yesterday":n<0?(-n)+" days ago":"in "+n+" days"}
+// ---------- Water game: savings pools, levels, streaks, badges
+const okDate=d=>/^\d{4}-\d\d-\d\d$/.test(d||"");
+const savedIn=mk=>S.pools.reduce((a,p)=>a+p.dep.filter(d=>d.date.startsWith(mk)).reduce((b,d)=>b+d.amt,0),0);
+const LV=[[0,"Puddle"],[100,"Pond"],[300,"Stream"],[700,"River"],[1500,"Lake"],[3000,"Sea"],[6000,"Ocean"]];
+let lastLv=null;
+function game(){const tdy=new Date();tdy.setHours(0,0,0,0);const tk=iso(tdy);
+ const commit=S.subs.filter(s=>s.on!==false).reduce((a,s)=>a+mo(s),0),perDay={};
+ S.exp.forEach(e=>perDay[e.date]=(perDay[e.date]||0)+e.amt);
+ const start=[...S.exp.map(e=>e.date),...S.co.map(e=>e.date),...S.pools.flatMap(p=>p.dep.map(d=>d.date))].filter(d=>okDate(d)&&d<=tk).sort()[0];
+ const allow=d=>Math.max(0,S.budget-commit)/new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+ let onPace=0,run=0,best=0,noSpend=false;
+ if(start){let d=new Date(start+"T00:00");const min=new Date(tdy);min.setDate(min.getDate()-120);if(d<min)d=min;
+  while(d<tdy){const v=perDay[iso(d)]||0;if(!v)noSpend=true;
+   if(S.budget>0&&v<=allow(d)+.005){onPace++;run++;best=Math.max(best,run)}else run=0;d.setDate(d.getDate()+1)}}
+ const A=S.budget>0?allow(tdy):0,todayOk=S.budget>0&&(perDay[tk]||0)<=A+.005,streak=S.budget>0?run+(todayOk?1:0):0;best=Math.max(best,streak);
+ let poolPts=0,full=0,deps=0;S.pools.forEach(p=>{const t=sum(p.dep);deps+=p.dep.length;if(p.target>0){poolPts+=Math.min(100,Math.floor(t/p.target*100));if(t>=p.target-.005)full++}});
+ let goodMonths=0;if(S.budget>0){const cm=tk.slice(0,7);new Set(S.exp.map(e=>e.date.slice(0,7))).forEach(mk=>{if(mk<cm&&sum(S.exp.filter(e=>e.date.startsWith(mk)))+commit+savedIn(mk)<=S.budget+.005)goodMonths++})}
+ const entries=S.exp.length+S.co.length+S.subs.length,drops=entries*2+onPace*10+deps*5+poolPts+full*50+goodMonths*100;
+ let lv=0;LV.forEach((x,i)=>{if(drops>=x[0])lv=i});
+ const badges=[["First drop","Log your first entry",entries>0],["No-spend day","A full day with no daily spending",noSpend],["Steady stream","Stay on pace 7 days in a row",best>=7],["Unbroken river","Stay on pace 30 days in a row",best>=30],["First pour","Pour money into a savings pool",deps>0],["Full pool","Fill a savings pool to its goal",full>0],["Leak fixer","Pause a subscription",S.subs.some(s=>s.on===false)],["Calm waters","Finish a month under budget",goodMonths>0],["Card keeper","Mark a card statement as paid",Object.keys(S.paid||{}).length>0]].map(([n,d,on])=>({n,d,on}));
+ return{drops,lv,name:LV[lv][1],prevAt:LV[lv][0],nextAt:LV[lv+1]?LV[lv+1][0]:0,nextName:LV[lv+1]?LV[lv+1][1]:"",streak,best,A,todayOk,badges}}
+let delPoolId=null;
+function addPool(e){e.preventDefault();const f=e.target.elements,n=f.nm.value.trim().slice(0,60),t=Math.round((+f.tg.value||0)*100)/100;if(!n||!(t>0))return;
+ S.pools.push({id:uid(),name:n,target:t,dep:[]});e.target.reset();save();render();fx(`New pool “${n}” is ready to fill.`,"fill")}
+function pour(e,id){e.preventDefault();const p=S.pools.find(p=>p.id===id),a=Math.round((+e.target.elements.amt.value||0)*100)/100;if(!p||!(a>0))return;
+ const was=sum(p.dep)>=p.target-.005;p.dep.push({id:uid(),date:iso(new Date()),amt:a});save();render();
+ fx(!was&&sum(p.dep)>=p.target-.005?`“${p.name}” is full! Goal reached.`:`+${money(a)} poured into ${p.name}`,"fill")}
+function delDep(pid,did){const p=S.pools.find(p=>p.id===pid);if(!p)return;const d=p.dep.find(d=>d.id===did);p.dep=p.dep.filter(d=>d.id!==did);save();render();if(d)fx(`${money(d.amt)} drained back out of ${p.name}`,"drain")}
+function askDelPool(id){delPoolId=id;renderPools()}
+function delPool(id){S.pools=S.pools.filter(p=>p.id!==id);delPoolId=null;save();render()}
+function renderPools(){const el=$("#pl");if(!el)return;const ms=savedIn(month);
+ el.innerHTML=`<h2>Your pools · ${money(ms)} poured this month</h2>`+(S.pools.length?`<div class="pools">`+S.pools.map(p=>{const t=sum(p.dep),f=p.target>0?Math.min(1,t/p.target):0,full=t>=p.target-.005;
+  const dep=[...p.dep].sort((a,b)=>b.date.localeCompare(a.date));
+  return `<div class="pool${full?" full":""}"><div class="vessel" role="img" aria-label="${Math.round(f*100)}% full"><div class="fill" style="height:${f*100}%"></div><span>${Math.round(f*100)}%</span></div>
+  <div class="pb"><div class="ph"><b>${esc(p.name)}</b>${full?'<span class="tag ok">Full</span>':""}</div><div class="m">${money(t)} of ${money(p.target)}${full?"":` · ${money(p.target-t)} to go`}</div>
+  <form class="acts" onsubmit="pour(event,'${p.id}')"><input name="amt" id="pour-${p.id}" type="number" step="0.01" min="0.01" placeholder="Amount" aria-label="Amount to pour into ${esc(p.name)}" required><button class="p">Pour in</button></form>
+  <details class="ch"><summary class="m">${dep.length} pour${dep.length===1?"":"s"}</summary>${dep.map(d=>`<div class="row"><div class="l"><div>${money(d.amt)}</div><div class="m">${fd(new Date(d.date+"T00:00"))}</div></div><div class="r"><button class="g" onclick="delDep('${p.id}','${d.id}')" aria-label="Remove this pour">✕</button></div></div>`).join("")||'<div class="empty">Nothing poured yet.</div>'}</details>
+  <div class="acts">${delPoolId===p.id?`<span class="m">Delete this pool and its history?</span><button type="button" class="warnb" onclick="delPool('${p.id}')">Delete</button><button type="button" onclick="delPoolId=null;renderPools()">Keep</button>`:`<button type="button" class="g" onclick="askDelPool('${p.id}')">Delete pool</button>`}</div></div></div>`}).join("")+`</div>`:'<div class="empty">No pools yet. Name something you are saving for, like an emergency fund or a trip, and set a goal.</div>')}
+// ---------- Feedback toasts
+let toastT;function fx(msg,kind){const t=$("#toast");if(!t)return;t.textContent=msg;t.className="toast on "+(kind||"");clearTimeout(toastT);toastT=setTimeout(()=>t.className="toast",2600);if(kind==="drain"||kind==="fill")splash=1;kick()}
+// ---------- Tank canvas
+const RM=matchMedia("(prefers-reduced-motion: reduce)");
+let lvNow=null,lvTo=0,tState="ok",raf=0,splash=0;const T0=performance.now();
+function setTank(f,s){lvTo=Math.max(0,Math.min(1,f));tState=s;if(lvNow==null||RM.matches)lvNow=lvTo}
+function tok(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function drawTank(cv,f,t,small){const r=cv.getBoundingClientRect();if(!r.width||!r.height)return;const dpr=window.devicePixelRatio||1,W=Math.round(r.width*dpr),H=Math.round(r.height*dpr);
+ if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}const x=cv.getContext("2d");x.clearRect(0,0,W,H);
+ const top=tok(tState==="dry"?"--warn":tState==="low"?"--amber":"--water"),deep=tok(tState==="dry"?"--warn":tState==="low"?"--amber":"--water2");
+ const y0=H*(1-f),amp=(small?1.5:5)*dpr*(f>0&&f<1?1:0)*(1+splash*2.5);
+ [[.45,1.3,0],[1,1,Math.PI]].forEach(([al,sp,ph])=>{x.globalAlpha=al;const gr=x.createLinearGradient(0,y0,0,H);gr.addColorStop(0,top);gr.addColorStop(1,deep);x.fillStyle=gr;
+  x.beginPath();x.moveTo(0,H);for(let i=0;i<=W+4;i+=3*dpr)x.lineTo(i,y0+Math.sin(i/W*Math.PI*2*(small?1:1.6)+t*sp*2+ph)*amp);x.lineTo(W,H);x.closePath();x.fill()});
+ x.globalAlpha=1;if(!small&&f>.05&&!RM.matches){x.fillStyle=tok("--foam");for(let k=0;k<7;k++){const bx=(k*.137+.07)%1*W,cyc=((t*.18+k*.29)%1),by=H-cyc*(H-y0),rr=(1.5+k%3)*dpr;if(by>y0+4*dpr){x.globalAlpha=.55*(1-cyc);x.beginPath();x.arc(bx+Math.sin(t+k)*4*dpr,by,rr,0,7);x.fill()}}x.globalAlpha=1}}
+function loop(now){raf=0;if(lvNow==null)return;const t=RM.matches?0:(now-T0)/1000;
+ if(RM.matches){lvNow=lvTo;splash=0}else{lvNow+=(lvTo-lvNow)*.07;splash*=.965}
+ document.querySelectorAll("canvas.wv").forEach(c=>drawTank(c,lvNow,t,c.id==="gauge"));
+ if(RM.matches||document.hidden)return;raf=requestAnimationFrame(loop)}
+function kick(){if(!raf)raf=requestAnimationFrame(loop)}
+document.addEventListener("visibilitychange",kick);addEventListener("resize",kick);
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",kick);RM.addEventListener("change",kick)}catch(e){}
+try{new MutationObserver(kick).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]})}catch(e){}
 function render(){
  fillPay();
  const[y,m]=month.split("-").map(Number);
@@ -268,15 +405,16 @@ function render(){
  const act=S.subs.filter(s=>s.on!==false),commit=act.reduce((a,s)=>a+mo(s),0);
  const ex=S.exp.filter(e=>e.date.startsWith(month)),spent=ex.reduce((a,e)=>a+e.amt,0),tot=commit+spent;
  const now=new Date(),cur=iso(now).slice(0,7)===month,dim=new Date(y,m,0).getDate(),dleft=cur?dim-now.getDate()+1:0;
- const left=S.budget-tot,over=S.budget>0&&tot>S.budget,mname=new Date(y,m-1,1).toLocaleDateString(undefined,{month:"long"});
+ const saved=savedIn(month),used=tot+saved,left=S.budget-used,over=S.budget>0&&used>S.budget+.005,mname=new Date(y,m-1,1).toLocaleDateString(undefined,{month:"long"});
+ const g=game(),fr=S.budget>0?Math.max(0,left)/S.budget:0,low=S.budget>0&&!over&&fr<.2;
+ setTank(fr,over?"dry":low?"low":"ok");
  let line="";
- if(S.budget){line=over?`You've gone <b>${money(tot-S.budget)}</b> over your ${money(S.budget)} budget.`:`You've used <b>${money(tot)}</b> of your ${money(S.budget)} budget.`;
-  if(cur&&!over)line+=` ${dleft} day${dleft===1?"":"s"} left, so about <b>${money(left/dleft)}</b> a day keeps you on track.`}
- else line=`Your bills and spending for ${mname}. Set a monthly budget below to see what's left.`;
+ if(S.budget){line=over?`Your tank ran dry. You're <b>${money(used-S.budget)}</b> over your ${money(S.budget)} budget.`:`You've let <b>${money(used)}</b> flow out of your ${money(S.budget)} tank.`;
+  if(cur&&!over)line+=` ${dleft} day${dleft===1?"":"s"} left, so about <b>${money(left/dleft)}</b> a day keeps the water flowing.`}
+ else line=`Your bills and spending for ${mname}. Set a monthly budget below to fill your tank.`;
  let cmp="";if(cur){const pm=iso(new Date(y,m-2,1)).slice(0,7),dd=now.getDate(),prev=S.exp.filter(e=>e.date.startsWith(pm));
   if(prev.length){const pv=prev.filter(e=>+e.date.slice(8)<=dd).reduce((a,e)=>a+e.amt,0),diff=spent-pv;
    cmp=Math.abs(diff)<.01?"Daily spending is the same as this time last month.":`Daily spending is ${money(Math.abs(diff))} ${diff<0?"lower":"higher"} than this time last month.`}}
- const scale=Math.max(S.budget,tot)||1,bm=over?S.budget/scale*100:null;
  const cx=S.co.filter(e=>e.date.startsWith(month)),cot=cx.reduce((a,e)=>a+e.amt,0),coun=cx.filter(e=>!e.re).reduce((a,e)=>a+e.amt,0);
  const daysIn=cur?now.getDate():dim;
  const cats={};ex.forEach(e=>cats[e.cat]=(cats[e.cat]||0)+e.amt);if(commit)cats["Subscriptions"]=commit;
@@ -285,28 +423,47 @@ function render(){
  const ci=S.cards.map(c=>({c,k:cardInfo(c)})),cdue=ci.filter(x=>x.k.due),cdt=cdue.reduce((a,x)=>a+x.k.due,0),cnext=cdue.map(x=>x.k.D).sort((a,b)=>a-b)[0];
  const up=act.map(s=>({name:s.name,d:nextDue(s),amt:s.amt,tag:""})).concat(cdue.map(x=>({name:x.c.name+" payment",d:x.k.D,amt:x.k.due,tag:"card"}))).sort((a,b)=>a.d-b.d).filter(x=>days(x.d)<=30),wk=up.filter(x=>days(x.d)<=7).reduce((a,x)=>a+x.amt,0);
  const rec=[...S.exp].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
- const seg=(v,c)=>v>0?`<i class="${c}" style="flex:${v} 1 0"></i>`:"";
- $("#ov").innerHTML=`<div class="box hero">
- <div class="m">${S.budget?(over?"Over budget for "+mname:"Left to spend in "+mname):"Spent in "+mname}</div>
+ const scale=Math.max(S.budget,used)||1,seg=(v,c)=>v>0?`<i class="${c}" style="width:${v/scale*100}%"></i>`:"";
+ const marks=S.budget?[.75,.5,.25].map(p=>`<span style="bottom:${p*100}%"><b>${money(S.budget*p).replace(/\.00$/,"")}</b></span>`).join(""):"";
+ const pct=S.budget?Math.round(fr*100):0,nx=g.nextAt?g.nextAt-g.drops:0,lp=g.nextAt?(g.drops-g.prevAt)/(g.nextAt-g.prevAt)*100:100;
+ const poolT=S.pools.reduce((a,p)=>a+sum(p.dep),0),poolG=S.pools.reduce((a,p)=>a+p.target,0);
+ $("#ov").innerHTML=`<section class="box hero ${over?"dry":low?"low":""}">
+ <div class="tank" role="img" aria-label="Tank ${pct}% full"><canvas id="tank" class="wv"></canvas><div class="marks">${marks}</div>${!S.budget?'<div class="tnote">No budget yet</div>':over?'<div class="tnote">Dry</div>':""}</div>
+ <div class="hside">
+ <div class="eyebrow">${S.budget?(over?"Over budget in "+mname:"Left in your tank · "+mname):"Out of your account in "+mname}</div>
  <div class="big${over?" neg":""}">${S.budget?(over?"−":"")+money(Math.abs(left)):money(tot)}</div>
+ ${S.budget?`<div class="pct">${over?"Tank empty":pct+"% full"}${low?" · running low":""}</div>`:""}
  <p class="ln">${line}</p>
- <div class="sbar" role="img" aria-label="Bills and subscriptions ${money(commit)}, daily spending ${money(spent)}${S.budget&&!over?", left "+money(left):""}">${seg(commit,"s1")}${seg(spent,"s2")}${S.budget&&!over?seg(left,"s0"):""}${!tot&&!S.budget?'<i class="s0" style="flex:1"></i>':""}${bm!=null?`<b class="bm" style="left:${bm}%"></b>`:""}</div>
- <div class="lg"><span><i class="s1"></i>Bills &amp; subscriptions<b>${money(commit)}</b></span><span><i class="s2"></i>Daily spending<b>${money(spent)}</b></span>${S.budget&&!over?`<span><i class="s0"></i>Left<b>${money(left)}</b></span>`:""}${over?`<span><i class="bmk"></i>Budget line</span>`:""}</div>
+ <div class="flow" aria-hidden="true">${seg(commit,"f1")}${seg(spent,"f2")}${seg(saved,"f3")}${S.budget&&!over?seg(left,"f0"):""}</div>
+ <div class="lg"><span><i class="f1"></i>Bill pipes<b>${money(commit)}</b></span><span><i class="f2"></i>Daily spending<b>${money(spent)}</b></span><span><i class="f3"></i>Poured to savings<b>${money(saved)}</b></span>${S.budget&&!over?`<span><i class="f0"></i>Still in tank<b>${money(left)}</b></span>`:""}</div>
  ${cmp?`<p class="m" style="margin:10px 0 0">${cmp}</p>`:""}
- <div class="bud">${S.budget?`<button class="g" onclick="this.hidden=true;const s=this.nextElementSibling;s.hidden=false;s.querySelector('input').focus()">Edit budget</button><span hidden>`:"<span>"}<label class="m">Monthly budget <input type="number" min="0" step="1" value="${S.budget||""}" placeholder="e.g. 3000" onchange="setBudget(this.value)"></label></span></div>
- </div>
+ <div class="bud">${S.budget?`<button class="g" onclick="this.hidden=true;const s=this.nextElementSibling;s.hidden=false;s.querySelector('input').focus()">Edit budget</button><span hidden>`:"<span>"}<label class="m">Monthly budget <input id="budin" type="number" min="0" step="1" value="${S.budget||""}" placeholder="e.g. 3000" onchange="setBudget(this.value)"></label></span></div>
+ </div></section>
+ <section class="game">
+ <div class="box gc"><div class="gh"><span class="eyebrow">Level ${g.lv+1}</span><span class="m">${g.drops.toLocaleString()} drops</span></div><div class="gn">${g.name}</div>
+ <div class="bar xp"><i style="width:${Math.max(2,lp)}%"></i></div><div class="m">${g.nextAt?`${nx.toLocaleString()} drops to ${g.nextName}`:"Top level reached"}</div></div>
+ <div class="box gc"><div class="gh"><span class="eyebrow">Flow streak</span>${g.todayOk?'<span class="tag ok">Today on pace</span>':S.budget?'<span class="tag">Over pace today</span>':""}</div><div class="gn">${g.streak} day${g.streak===1?"":"s"}</div>
+ <div class="m">${S.budget?`Days your spending stayed under ${money(g.A)}. Best: ${g.best} day${g.best===1?"":"s"}.`:"Set a budget to start a streak."}</div></div>
+ <div class="box gc wide"><div class="gh"><span class="eyebrow">Badges</span><span class="m">${g.badges.filter(b=>b.on).length} of ${g.badges.length}</span></div>
+ <div class="badges">${g.badges.map(b=>`<div class="bdg${b.on?" on":""}" title="${esc(b.d)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C8.5 7.2 5.5 10.6 5.5 14.2a6.5 6.5 0 0 0 13 0c0-3.6-3-7-6.5-11.7Z"/></svg><span><b>${esc(b.n)}</b><small>${esc(b.d)}</small></span></div>`).join("")}</div>
+ <div class="m" style="margin-top:8px">How to earn drops: 2 per entry logged, 10 per day on pace, 5 per pour into savings plus up to 100 per pool as it fills, 50 per full pool, 100 per month finished under budget.</div></div>
+ </section>
  <div class="tiles">
- <button class="c" onclick="go('sb')"><small>Bills &amp; subscriptions</small><b>${money(commit)}</b><span class="m">${act.length} active, every month</span></button>
+ <button class="c" onclick="go('sb')"><small>Bill pipes</small><b>${money(commit)}</b><span class="m">${act.length} active, every month</span></button>
  <button class="c" onclick="go('sp')"><small>Daily spending</small><b>${money(spent)}</b><span class="m">${ex.length} ${ex.length===1?"entry":"entries"} · ${money(daysIn?spent/daysIn:0)} a day</span></button>
+ <button class="c" onclick="go('sv')"><small>Savings pools</small><b>${money(poolT)}</b><span class="m">${S.pools.length?`of ${money(poolG)} across ${S.pools.length} pool${S.pools.length===1?"":"s"}`:"start your first pool"}</span></button>
  ${S.cards.length?`<button class="c" onclick="go('cd')"><small>Credit cards to pay</small><b>${money(cdt)}</b><span class="m">${cdt?"next due "+fd(cnext):"all statements paid"}</span></button>`:""}
  <button class="c" onclick="go('co')"><small>Company to claim</small><b>${money(coun)}</b><span class="m">${money(cot)} spent, not in your total</span></button>
  </div>
- <div class="box"><h2>Where your money goes</h2>${cl.length?cl.map(([k,v])=>`<div class="bl"><span title="${esc(k)}">${esc(k)}</span><div class="bar"><i style="width:${v/mx*100}%"></i></div><span>${money(v)}<em>${tot?Math.round(v/tot*100):0}%</em></span></div>`).join(""):'<div class="empty">Nothing yet. Add a subscription or an expense to see your breakdown.</div>'}</div>
+ <div class="box"><h2>Where your money flows</h2>${cl.length?cl.map(([k,v])=>`<div class="bl"><span title="${esc(k)}">${esc(k)}</span><div class="bar"><i style="width:${v/mx*100}%"></i></div><span>${money(v)}<em>${tot?Math.round(v/tot*100):0}%</em></span></div>`).join(""):'<div class="empty">Nothing yet. Add a bill or an expense to see where it flows.</div>'}</div>
  ${payBox(ex)}
  <div class="two">
  <div class="box"><h2>Coming up</h2>${up.length?`<p class="m" style="margin:0 0 4px">${money(wk)} due in the next 7 days</p>`+up.slice(0,6).map(x=>`<div class="row"><div class="l"><div>${esc(x.name)}${days(x.d)<0?'<span class="tag">overdue</span>':days(x.d)<=3?'<span class="tag">soon</span>':""}</div><div class="m">${fd(x.d)} · ${when(x.d)}${x.tag?" · credit card":""}</div></div><div class="r">${money(x.amt)}</div></div>`).join(""):'<div class="empty">No bills due in the next 30 days.</div>'}</div>
  <div class="box"><h2>Recent spending</h2>${rec.length?rec.map(e=>`<div class="row"><div class="l"><div>${esc(e.note||e.cat)}</div><div class="m">${meta(e.cat,fd(new Date(e.date+"T00:00")),cardName(e.pay))}</div></div><div class="r">${money(e.amt)}</div></div>`).join(""):'<div class="empty">No spending logged yet.</div>'}</div>
  </div>`;
+ $("#lvchip").textContent=`Lv ${g.lv+1} · ${g.name}`;
+ if(lastLv!=null&&g.lv>lastLv){const nm=g.name;setTimeout(()=>fx(`Level up! You're now a ${nm}.`,"lvl"),2700)}lastLv=g.lv;
+ renderPools();kick();
  const subs=S.subs.map(s=>({s,d:nextDue(s)})).sort((a,b)=>a.d-b.d);
  $("#sl").innerHTML=`<h2>Your subscriptions · ${money(commit)}/mo · ${money(commit*12)}/yr</h2>`+(subs.length?subs.map(({s,d})=>`<div class="row ${s.on===false?"off":""}${editSub===s.id?" editing":""}"><div class="l"><div>${esc(s.name)}</div><div class="m">${meta(s.cat,s.cycle,"next "+fd(d),cardName(s.pay),s.on===false?"paused":"")}</div></div><div class="r">${money(s.amt)}${s.cycle!=="monthly"?`<div class="m">${money(mo(s))}/mo</div>`:""}<button class="g" onclick="editS('${s.id}')">Edit</button><button class="g" onclick="tog('${s.id}')">${s.on===false?"Resume":"Pause"}</button><button class="g" onclick="delSub('${s.id}')" aria-label="Delete">✕</button></div></div>`).join(""):'<div class="empty">No subscriptions yet.</div>');
  const by={};ex.forEach(e=>(by[e.date]=by[e.date]||[]).push(e));
@@ -349,7 +506,7 @@ $("#cur").oninput=e=>{S.cur=e.target.value||"RM";save();render();$("#cur").focus
 $("#sc").innerHTML=SC.map(c=>`<option>${c}</option>`).join("");
 $("#ec").innerHTML=EC.map(c=>`<option>${c}</option>`).join("");
 $("#cc").innerHTML=CC.map(c=>`<option>${c}</option>`).join("");
-function merge(o){S=Object.assign({cur:"RM",budget:0,subs:[],exp:[],co:[],cards:[],wallets:[],paid:{},lastPay:""},o)}
+function merge(o){S=Object.assign({cur:"RM",budget:0,subs:[],exp:[],co:[],cards:[],wallets:[],paid:{},lastPay:"",pools:[]},o);if(!Array.isArray(S.pools))S.pools=[]}
 try{merge(JSON.parse(localStorage.getItem("trk")||"{}"))}catch(e){}
 defaults();render();
 // ---------- Full backup (everything, including cards, wallets and budget)
