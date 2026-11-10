@@ -6,7 +6,8 @@ Your monthly budget is a water tank: bills and spending drain it, and money you 
 
 - Works offline once opened, and installs to your home screen like an app.
 - No account, no server: all data is stored in your browser on that device only.
-- Use **Backup and spreadsheet sync → Download full backup** regularly, and **Restore from backup** to move data to another device.
+- Tap **+** to log spending, a bill or a company expense in a few taps. Tap any item to edit or delete it (deletes can be undone).
+- Use **More → Settings & backup → Download backup** regularly, and **Restore** to move data to another device.
 
 ## Install on your phone
 - **iPhone (Safari):** open the site → Share → Add to Home Screen.
