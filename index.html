@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<!-- Security: the app makes no network requests, so connect-src is 'none'; even injected code can't send data anywhere. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
 <title>Clearflow · Money Tracker</title>
 <meta name="theme-color" content="#e7ebee" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#080b0d" media="(prefers-color-scheme: dark)">
@@ -12,7 +15,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<script>try{const t=localStorage.getItem("trk-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+<script>window.FRAMED=(()=>{try{return window.top!==window.self}catch(e){return true}})();if(FRAMED)document.documentElement.style.display="none";
+try{const t=localStorage.getItem("trk-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 /* Stainless steel + glass. Steel frames the "displays" (hero, orb, cards, controls); glass is the floating chrome and panels. */
 :root{
@@ -300,6 +304,34 @@ details.more .item+.item::before{left:0}
  .card,.btn.ghost{background:var(--solid)}.top.scrolled,.sheet{background:var(--solid)}.tabbar{background:linear-gradient(var(--solid),var(--solid)) padding-box,var(--steel) border-box}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
  body.lock .wrap,body.lock .ti{transform:none;filter:none}}
+/* Passcode lock screen */
+.lockscr{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:var(--bg)}
+.lockscr h2{margin:10px 0 4px;font-size:21px;letter-spacing:-.02em}
+.lockscr .mark{width:64px;height:64px}
+.lockscr input{text-align:center;margin:16px 0 12px;font-size:18px;letter-spacing:.08em}
+.lockscr .err{color:var(--warn);min-height:20px;font-size:13.5px;margin:0 0 10px}
+.lockscr .link{margin-top:18px}
+.lockscr .lockin{width:100%;max-width:360px;text-align:center}
+.lockscr form{width:100%;text-align:center}
+/* On-screen PIN keypad (no system keyboard) */
+.pin{display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-user-select:none}
+.pdots{display:flex;gap:14px;justify-content:center;margin:20px 0 8px;height:14px}
+.pdots i{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--mut);transition:background-color .12s ease,box-shadow .12s ease,transform .12s var(--ease-out)}
+.pdots i.on{background:var(--tx);box-shadow:none;transform:scale(1.08)}
+.pdots.bad{animation:pshake .42s var(--ease-out)}
+.pdots.bad i{box-shadow:inset 0 0 0 1.5px var(--warn)}
+@keyframes pshake{15%,55%{transform:translateX(-9px)}35%,75%{transform:translateX(9px)}}
+.pmsg{min-height:20px;font-size:13.5px;color:var(--warn);margin:0 0 6px;text-align:center}
+.pkeys{display:grid;grid-template-columns:repeat(3,72px);gap:12px 24px;justify-content:center}
+.pkeys button{width:72px;height:72px;border-radius:50%;border:0;padding:0;background:var(--soft);color:var(--tx);box-shadow:inset 0 0 0 1px var(--hair);font:500 28px/1 var(--fd);font-variant-numeric:tabular-nums;touch-action:manipulation;transition:transform .12s var(--ease-out),background-color .15s ease}
+.pkeys button:active{transform:scale(.92);background:var(--press)}
+.pkeys button.fn{background:none;box-shadow:none;font-size:24px;color:var(--mut)}
+.pkeys button:disabled{opacity:.45}
+.pkeys button:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+@media (max-height:700px){.pkeys{grid-template-columns:repeat(3,64px);gap:10px 22px}.pkeys button{width:64px;height:64px;font-size:25px}.pdots{margin:14px 0 6px}}
+@media (max-height:600px){.pkeys{grid-template-columns:repeat(3,58px);gap:8px 22px}.pkeys button{width:58px;height:58px;font-size:23px}.secf h2{margin:2px 0 6px}.secf .warnbox{margin:0 0 8px;padding:8px 12px}}
+.secf input{margin-bottom:10px}
+.secf .warnbox{background:var(--warns);color:var(--tx);border-radius:14px;padding:10px 12px;font-size:13.5px;margin:4px 0 14px;text-align:left}
 </style></head><body>
 <header class="top"><div class="ti">
  <button class="back" id="back" hidden onclick="go('more')" aria-label="Back">‹</button>
@@ -328,20 +360,29 @@ details.more .item+.item::before{left:0}
 </div></nav>
 <div class="sw" id="sw" hidden><div class="scrim" onclick="closeSheet()"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1"><div class="grab" id="grab"><i></i></div><div id="shb"></div></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="lockscr" id="lock" hidden role="dialog" aria-modal="true" aria-labelledby="lockh"><div class="lockin">
+ <span id="lockmark"></span><h2 id="lockh">Clearflow is locked</h2><p class="m" id="lockt" style="margin:0">Enter your PIN</p>
+ <div id="lockpad"></div>
+ <form id="lockf" hidden autocomplete="off"><input id="lockp" type="password" autocomplete="current-password" aria-label="Passcode">
+ <p class="err" id="locke" role="alert"></p><button class="btn primary big" id="lockb">Unlock</button></form>
+ <button type="button" class="link" id="lockw">Forgot your PIN? Erase all data</button></div></div>
 <script>
 const SC=["Streaming","Software","Music","Gaming","Utilities","Insurance","Fitness","Rent","Other"];
 const EC=["Food","Coffee","Groceries","Transport","Bills","Shopping","Health","Fun","Other"];
 const CC=["Travel","Meals","Supplies","Software","Equipment","Marketing","Other"];
 const IC={Food:"🍜",Coffee:"☕",Groceries:"🛒",Transport:"🚗",Bills:"🧾",Shopping:"🛍️",Health:"💊",Fun:"🎉",Other:"🏷️",Streaming:"📺",Software:"💻",Music:"🎵",Gaming:"🎮",Utilities:"💡",Insurance:"🛡️",Fitness:"🏋️",Rent:"🏠",Travel:"✈️",Meals:"🍽️",Supplies:"📦",Equipment:"🔧",Marketing:"📣"};
 const ic=c=>IC[c]||"🏷️";
-const F={monthly:1,weekly:52/12,yearly:1/12};
+const F={monthly:1,weekly:52/12,yearly:1/12},CYC=["monthly","weekly","yearly"];
 let S={cur:"RM",budget:0,subs:[],exp:[],co:[],cards:[],wallets:[],paid:{},lastPay:"",pools:[]};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const iso=d=>d.toLocaleDateString("en-CA");
-const uid=()=>Math.random().toString(36).slice(2,9);
+// Random ids from the browser's secure random generator. Ids are always [a-z0-9], which keeps them safe inside onclick="...('id')".
+const uid=()=>Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>"abcdefghijklmnopqrstuvwxyz0123456789"[b%36]).join("");
+// Currency symbol: no HTML/JS-significant characters, max 4 chars.
+const cleanCur=v=>(typeof v==="string"?v.replace(/[<>&"'`\\\u0000-\u001f\u007f]/g,"").trim().slice(0,4):"")||"RM";
 let month=iso(new Date()).slice(0,7);
-const money=n=>S.cur+" "+(+n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const money=n=>esc(S.cur)+" "+(+n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 const mo=s=>s.amt*F[s.cycle];
 const fd=d=>d.toLocaleDateString(undefined,{day:"numeric",month:"short"});
 const fds=s=>fd(new Date(s+"T00:00"));
@@ -355,7 +396,30 @@ function nextDue(s){const t=new Date();t.setHours(0,0,0,0);let d=new Date(s.next
  return d}
 function days(d){const t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/864e5)}
 function when(d){const n=days(d);return n===0?"today":n===1?"tomorrow":n===-1?"yesterday":n<0?(-n)+" days ago":"in "+n+" days"}
-function save(){try{localStorage.setItem("trk",JSON.stringify(S));st("Saved on this device")}catch(e){st("Couldn't save. Check your browser storage settings.")}}
+// ---------- Encryption (passcode lock + protected backups)
+// PBKDF2-SHA256 turns the passcode into an AES-256-GCM key. Only ciphertext is stored; the key lives in memory while unlocked.
+const CRYPTO_OK=!!(window.isSecureContext&&window.crypto&&crypto.subtle);
+const KDF_ITER=600000,ENC_KEY="trk-enc",IDLE_MS=5*60e3,HIDDEN_MS=60e3;
+const LOCK={key:null,salt:null,iter:KDF_ITER,pin:0,pending:Promise.resolve()};
+const encOn=()=>{try{return !!localStorage.getItem(ENC_KEY)}catch(e){return false}};
+function b64(buf){const u=new Uint8Array(buf);let s="";for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)}
+function unb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+async function deriveKey(pass,salt,iter){const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pass),"PBKDF2",false,["deriveKey"]);
+ return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+// Serialises obj synchronously (before the first await), so later edits to S don't leak into this save.
+function seal(key,salt,iter,obj){const iv=crypto.getRandomValues(new Uint8Array(12)),pt=new TextEncoder().encode(JSON.stringify(obj));
+ return crypto.subtle.encrypt({name:"AES-GCM",iv},key,pt).then(ct=>({app:"clearflow",enc:1,kdf:"PBKDF2-SHA256",iter,salt:b64(salt),iv:b64(iv),ct:b64(ct)}))}
+// Checks an encrypted envelope's shape. The iteration cap stops a crafted file from freezing the app.
+const isEnv=o=>!!o&&o.enc===1&&typeof o.ct==="string"&&typeof o.iv==="string"&&typeof o.salt==="string"&&Number.isInteger(o.iter)&&o.iter>=100000&&o.iter<=5e6;
+async function openEnv(pass,env){if(!isEnv(env))throw new Error("format");const salt=unb64(env.salt),iv=unb64(env.iv);if(salt.length<16||iv.length!==12)throw new Error("format");
+ const key=await deriveKey(pass,salt,env.iter),pt=await crypto.subtle.decrypt({name:"AES-GCM",iv},key,unb64(env.ct));
+ return{key,salt,iter:env.iter,data:JSON.parse(new TextDecoder().decode(pt))}}
+let saveSeq=0;
+function save(){
+ if(LOCK.key){const n=++saveSeq,p=seal(LOCK.key,LOCK.salt,LOCK.iter,S).then(env=>{if(n!==saveSeq)return;if(LOCK.pin)env.pin=LOCK.pin;localStorage.setItem(ENC_KEY,JSON.stringify(env));localStorage.removeItem("trk");st("Saved and encrypted on this device")})
+   .catch(()=>st("Couldn't save. Check your browser storage settings."));LOCK.pending=LOCK.pending.then(()=>p);return}
+ if(encOn())return; // locked: never write plaintext over the encrypted copy
+ try{localStorage.setItem("trk",JSON.stringify(S));st("Saved on this device")}catch(e){st("Couldn't save. Check your browser storage settings.")}}
 function shift(n){const[y,m]=month.split("-").map(Number);month=iso(new Date(y,m-1+n,1)).slice(0,7);render()}
 const hasCard=id=>!!id&&(S.cards.some(c=>c.id===id)||S.wallets.some(w=>w.id===id));
 const cardName=id=>id?((S.cards.find(c=>c.id===id)||S.wallets.find(w=>w.id===id)||{}).name||""):"";
@@ -412,7 +476,7 @@ let sheetOpen=false,lastFocus=null;
 function sheet(html,focusSel){const w=$("#sw"),b=$("#shb");b.innerHTML=html;
  if(!sheetOpen){lastFocus=document.activeElement;$(".wrap").style.transformOrigin=`50% ${scrollY+innerHeight/2}px`;w.classList.remove("out");w.hidden=false;void w.offsetWidth;w.classList.add("on");document.body.classList.add("lock");sheetOpen=true;$("#sheet").scrollTop=0}
  const f=focusSel&&b.querySelector(focusSel);try{(f||$("#sheet")).focus({preventScroll:true})}catch(e){}}
-function closeSheet(){if(!sheetOpen)return;sheetOpen=false;addPrev=null;const w=$("#sw");w.classList.add("out");w.classList.remove("on");document.body.classList.remove("lock");
+function closeSheet(){if(!sheetOpen)return;sheetOpen=false;if(PAD&&$("#shb").contains(PAD.root))PAD=null;PF=null;addPrev=null;const w=$("#sw");w.classList.add("out");w.classList.remove("on");document.body.classList.remove("lock");
  setTimeout(()=>{if(!sheetOpen){w.hidden=true;$("#shb").innerHTML=""}},360);
  if(lastFocus&&document.body.contains(lastFocus))try{lastFocus.focus({preventScroll:true})}catch(e){}}
 addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
@@ -659,10 +723,11 @@ try{DARKMQ.addEventListener("change",()=>{themeChrome();kick()})}catch(e){}
 function renderSettings(){const th=document.documentElement.dataset.theme||"auto";
  $("#v-settings").innerHTML=`<div class="card list">
  <label class="set"><span>Monthly budget</span><input type="number" inputmode="decimal" min="0" step="1" placeholder="Not set" value="${S.budget||""}" onchange="setBudget(this.value)"></label>
- <label class="set"><span>Currency</span><input maxlength="4" value="${esc(S.cur)}" onchange="S.cur=this.value.trim()||'RM';save();render()"></label>
+ <label class="set"><span>Currency</span><input maxlength="4" value="${esc(S.cur)}" onchange="S.cur=cleanCur(this.value);save();render()"></label>
  <div class="set"><span>Theme</span>${segHTML([["auto","Auto"],["light","Light"],["dark","Dark"]],th,themePrev==null?-1:themePrev,k=>`setTheme('${k}',event)`,"Theme")}</div></div>
  <div class="stitle">Backup</div><div class="card"><p class="m" style="margin:0 0 12px">Your data is stored only on this device. Download a backup now and then, and use it to move to another phone.</p>
  <div class="row-btns" style="margin:0"><button class="btn primary" onclick="backup()">Download backup</button><label class="btn">Restore<input type="file" accept=".json,application/json" onchange="restore(this)"></label></div></div>
+ ${secHTML()}
  <details class="card more" style="padding:4px 16px"><summary>Spreadsheet sync (CSV)</summary><p class="m" style="margin:0 0 12px">Export CSVs that match the Google Sheet tabs, or import rows from them. Imports add new rows and skip duplicates.</p>
  <div class="row-btns" style="margin:0 0 12px"><button class="btn" onclick="exp('subs')">Export bills</button><button class="btn" onclick="exp('exp')">Export spending</button><button class="btn" onclick="expCo()">Export company</button><label class="btn">Import CSV<input type="file" accept=".csv,.tsv,.txt" multiple onchange="imp(this.files);this.value=''"></label></div></details>
  <p class="m" style="text-align:center" id="st">${esc(stMsg)}</p>`;themePrev=null;slideSegs($("#v-settings"))}
@@ -674,7 +739,10 @@ function render(){const c=ctx();
  if(lastLv!=null&&c.g.lv>lastLv){const nm=c.g.name;setTimeout(()=>fx(`Level up! You're now a ${nm} 💧`),2700)}lastLv=c.g.lv;kick()}
 // ---------- CSV + backup
 function dl(name,data,type){const b=new Blob(["﻿"+data],{type:type||"text/csv"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);st("Downloaded "+name)}
-const csvEsc=v=>{v=String(v==null?"":v);return /[",\n\t]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+// Text starting with = + - @ (or tab/CR) would run as a formula in Excel/Sheets, so prefix it with ' (a literal-text marker).
+const csvEsc=v=>{const t=typeof v;v=String(v==null?"":v);if(t==="string"&&/^[=+\-@\t\r]/.test(v))v="'"+v;return /[",\n\t\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+// On import: trim, undo the ' marker added above, and cap the length like the app's own forms do.
+const csvTx=(v,n)=>{v=String(v||"").trim();if(/^'[=+\-@\t\r]/.test(v))v=v.slice(1);return v.slice(0,n)};
 function exp(k){const cap=s=>s[0].toUpperCase()+s.slice(1);
  const rows=k==="subs"?[["Name","Amount","Cycle","Next bill date","Category","Active","Monthly equivalent","Next due","Paid with"]].concat(S.subs.map(s=>[s.name,s.amt,cap(s.cycle),s.next,s.cat,s.on===false?"No":"Yes","","",cardName(s.pay)])):[["Date","Category","Amount","Note","Paid with"]].concat(S.exp.map(e=>[e.date,e.cat,e.amt,e.note,cardName(e.pay)]));
  dl(k==="subs"?"subscriptions.csv":"spending.csv",rows.map(r=>r.map(csvEsc).join(",")).join("\n"))}
@@ -690,28 +758,159 @@ const payId=n=>{n=String(n||"").trim().toLowerCase();const c=n&&(S.cards.find(c=
 function imp(files){[...files].forEach(f=>{const rd=new FileReader();rd.onload=()=>{
  const rows=parse(String(rd.result).replace(/^﻿/,"")),h=(rows.shift()||[]).map(x=>x.trim().toLowerCase());let n=0;
  if(h[0]==="name"){const k=new Set(S.subs.map(s=>[s.name,s.amt,s.cycle,s.next].join("|")));
-  rows.forEach(r=>{const o={id:uid(),name:(r[0]||"").trim(),amt:+r[1],cycle:(r[2]||"monthly").trim().toLowerCase(),next:(r[3]||"").trim(),cat:(r[4]||"Other").trim(),on:(r[5]||"Yes").trim().toLowerCase()!=="no",pay:payId(r[8])};
-   if(!o.name||!(o.amt>=0)||!F[o.cycle]||!okDate(o.next))return;
+  rows.forEach(r=>{const o={id:uid(),name:csvTx(r[0],60),amt:+r[1],cycle:(r[2]||"monthly").trim().toLowerCase(),next:(r[3]||"").trim(),cat:csvTx(r[4],40)||"Other",on:(r[5]||"Yes").trim().toLowerCase()!=="no",pay:payId(r[8])};
+   if(!o.name||!(o.amt>=0)||!CYC.includes(o.cycle)||!okDate(o.next))return;
    const key=[o.name,o.amt,o.cycle,o.next].join("|");if(k.has(key))return;k.add(key);S.subs.push(o);n++})}
  else if(h[0]==="date"&&h[4]==="reimbursed"){const k=new Set(S.co.map(e=>[e.date,e.cat,e.amt,e.note].join("|")));
-  rows.forEach(r=>{const o={id:uid(),date:(r[0]||"").trim(),cat:(r[1]||"Other").trim(),amt:+r[2],note:(r[3]||"").trim(),re:(r[4]||"").trim().toLowerCase()==="yes",pay:payId(r[5])};
+  rows.forEach(r=>{const o={id:uid(),date:(r[0]||"").trim(),cat:csvTx(r[1],40)||"Other",amt:+r[2],note:csvTx(r[3],80),re:(r[4]||"").trim().toLowerCase()==="yes",pay:payId(r[5])};
    if(!okDate(o.date)||!(o.amt>=0)||r[2]==="")return;
    const key=[o.date,o.cat,o.amt,o.note].join("|");if(k.has(key))return;k.add(key);S.co.push(o);n++})}
  else if(h[0]==="date"){const k=new Set(S.exp.map(e=>[e.date,e.cat,e.amt,e.note].join("|")));
-  rows.forEach(r=>{const o={id:uid(),date:(r[0]||"").trim(),cat:(r[1]||"Other").trim(),amt:+r[2],note:(r[3]||"").trim(),pay:payId(r[4])};
+  rows.forEach(r=>{const o={id:uid(),date:(r[0]||"").trim(),cat:csvTx(r[1],40)||"Other",amt:+r[2],note:csvTx(r[3],80),pay:payId(r[4])};
    if(!okDate(o.date)||!(o.amt>=0)||r[2]==="")return;
    const key=[o.date,o.cat,o.amt,o.note].join("|");if(k.has(key))return;k.add(key);S.exp.push(o);n++})}
  else{st("Not recognised: "+f.name);return}
- save();render();st("Imported "+n+" rows from "+f.name);fx("Imported "+pl(n,"row"))};rd.readAsText(f)})}
-function backup(){dl("clearflow-backup-"+iso(new Date())+".json",JSON.stringify(S,null,1),"application/json")}
-function restore(inp){const f=inp.files[0];inp.value="";if(!f)return;const rd=new FileReader();
- rd.onload=()=>{try{const o=JSON.parse(String(rd.result).replace(/^﻿/,""));if(!o||!Array.isArray(o.subs)||!Array.isArray(o.exp))throw 0;
-  if(!confirm("Replace everything in this app with the backup from "+f.name+"? Anything not in the backup will be lost."))return;
-  merge(o);save();render();st("Restored from "+f.name);fx("Backup restored")}catch(e){st("That file isn't a Clearflow backup.")}};rd.readAsText(f)}
-function merge(o){S=Object.assign({cur:"RM",budget:0,subs:[],exp:[],co:[],cards:[],wallets:[],paid:{},lastPay:"",pools:[]},o);["subs","exp","co","cards","wallets","pools"].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});if(!S.paid||typeof S.paid!=="object")S.paid={};S.pools.forEach(p=>{if(!Array.isArray(p.dep))p.dep=[]})}
-try{merge(JSON.parse(localStorage.getItem("trk")||"{}"))}catch(e){}
-stMsg=localStorage.getItem("trk")?"Saved on this device":"Your data stays on this device";
-themeChrome();render();go(location.hash.slice(1)||"home");
-if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
-if("serviceWorker" in navigator&&location.protocol!=="file:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+ merge(S);save();render();st("Imported "+n+" rows from "+f.name);fx("Imported "+pl(n,"row"))};rd.readAsText(f)})}
+// ---------- Backup (optionally password-protected) and restore
+function backup(){sheet(`<form class="secf" onsubmit="doBackup(event)"><h2>Download backup</h2><p class="m" style="margin:0 0 12px">A backup holds all your data. Add a password to encrypt the file, so anyone who finds it can't read it.</p>
+ ${CRYPTO_OK?`<input name="p1" type="password" autocomplete="new-password" placeholder="Backup password (recommended)" aria-label="Backup password">
+ <input name="p2" type="password" autocomplete="new-password" placeholder="Repeat password" aria-label="Repeat backup password">
+ <p class="m" style="margin:0 0 6px">Leave blank for an unencrypted file. A forgotten password can't be recovered.</p>`:`<p class="m" style="margin:0 0 6px">Encrypted backups need the app to be opened over HTTPS.</p>`}
+ <p class="m" id="bke" role="alert" style="color:var(--warn);min-height:18px;margin:0 0 10px"></p><button class="btn primary big">Download</button></form>`,CRYPTO_OK?"input[name=p1]":null)}
+async function doBackup(e){e.preventDefault();const f=e.target.elements,p=f.p1?f.p1.value:"",name="clearflow-backup-"+iso(new Date())+".json",err=t=>{$("#bke").textContent=t};
+ if(!p){dl(name,JSON.stringify(S,null,1),"application/json");closeSheet();fx("Backup downloaded (not encrypted)");return}
+ if(p.length<4)return err("Use at least 4 characters.");if(p!==f.p2.value)return err("The passwords don't match.");
+ const b=e.target.querySelector("button.big");b.disabled=true;b.textContent="Encrypting…";
+ try{const salt=crypto.getRandomValues(new Uint8Array(16)),key=await deriveKey(p,salt,KDF_ITER),env=await seal(key,salt,KDF_ITER,S);
+  dl(name,JSON.stringify(Object.assign({clearflow:"backup"},env)),"application/json");closeSheet();fx("Encrypted backup downloaded 🔒")}
+ catch(x){err("Couldn't encrypt the backup.");b.disabled=false;b.textContent="Download"}}
+let RST=null;
+function restore(inp){const f=inp.files[0];inp.value="";if(!f)return;if(f.size>20e6){st("That file is too large to be a Clearflow backup.");return}const rd=new FileReader();
+ rd.onload=()=>{let o=null;try{o=JSON.parse(String(rd.result).replace(/^﻿/,""))}catch(e){}
+  if(isEnv(o)){askBackupPass(o,f.name);return}applyRestore(o,f.name)};rd.readAsText(f)}
+function applyRestore(o,name){if(!o||typeof o!=="object"||!Array.isArray(o.subs)||!Array.isArray(o.exp)){st("That file isn't a Clearflow backup.");fx("That file isn't a Clearflow backup");return}
+ if(!confirm("Replace everything in this app with the backup from "+name+"? Anything not in the backup will be lost."))return;
+ merge(o);save();render();renderSettings();st("Restored from "+name);fx("Backup restored")}
+function askBackupPass(env,name){if(!CRYPTO_OK){st("Encrypted backups need the app to be opened over HTTPS.");return}RST={env,name};
+ sheet(`<form class="secf" onsubmit="unlockBackup(event)"><h2>Encrypted backup</h2><p class="m" style="margin:0 0 12px">${esc(name)} is password-protected. Enter the password you set when you downloaded it.</p>
+ <input name="p" type="password" autocomplete="current-password" aria-label="Backup password" required><p class="m" id="rste" role="alert" style="color:var(--warn);min-height:18px;margin:0 0 10px"></p><button class="btn primary big">Restore</button></form>`,"input[name=p]")}
+async function unlockBackup(e){e.preventDefault();if(!RST)return;const b=e.target.querySelector("button.big");b.disabled=true;b.textContent="Decrypting…";
+ try{const r=await openEnv(e.target.elements.p.value,RST.env),name=RST.name;RST=null;closeSheet();applyRestore(r.data,name)}
+ catch(x){b.disabled=false;b.textContent="Restore";$("#rste").textContent="Wrong password, or the file is damaged."}}
+// ---------- Data cleaning: every load, restore, import and undo goes through here.
+// Rebuilds S field by field, so a crafted backup can't smuggle in markup, odd ids, bad numbers or extra keys.
+const ID_RE=/^[A-Za-z0-9_-]{1,40}$/,PAID_RE=/^[A-Za-z0-9_-]{1,40}\|\d{4}-\d\d-\d\d$/,MAXAMT=1e12;
+const okId=v=>typeof v==="string"&&ID_RE.test(v);
+const okDay=v=>typeof v==="string"&&okDate(v)&&!isNaN(new Date(v+"T00:00"));
+const ctxt=(v,n)=>typeof v==="string"?v.replace(/[\u0000-\u001f\u007f]/g," ").trim().slice(0,n):"";
+const cnum=(v,lo,hi,d)=>{v=typeof v==="number"||typeof v==="string"?+v:NaN;return Number.isFinite(v)?Math.min(hi,Math.max(lo,v)):d};
+const camt=v=>{v=cnum(v,0,MAXAMT,NaN);return Number.isFinite(v)?Math.round(v*100)/100:NaN};
+function clean(o){o=o&&typeof o==="object"&&!Array.isArray(o)?o:{};
+ const list=(a,f)=>Array.isArray(a)?a.map(x=>x&&typeof x==="object"?f(x):null).filter(Boolean):[];
+ const pay=v=>okId(v)?v:"",day=v=>Math.round(cnum(v,1,31,1));
+ const exp=(x,co)=>{const r={id:x.id,amt:camt(x.amt),cat:ctxt(x.cat,40)||"Other",date:x.date,note:ctxt(x.note,80),pay:pay(x.pay)};if(co)r.re=x.re===true;return okId(r.id)&&okDay(r.date)&&Number.isFinite(r.amt)?r:null};
+ const paid={};if(o.paid&&typeof o.paid==="object")Object.keys(o.paid).forEach(k=>{if(PAID_RE.test(k)&&o.paid[k])paid[k]=true});
+ return{cur:cleanCur(o.cur),budget:cnum(o.budget,0,MAXAMT,0),
+  subs:list(o.subs,s=>{const r={id:s.id,on:s.on!==false,name:ctxt(s.name,60),amt:camt(s.amt),cycle:s.cycle,next:s.next,cat:ctxt(s.cat,40)||"Other",pay:pay(s.pay)};
+   return okId(r.id)&&r.name&&Number.isFinite(r.amt)&&CYC.includes(r.cycle)&&okDay(r.next)?r:null}),
+  exp:list(o.exp,x=>exp(x,false)),co:list(o.co,x=>exp(x,true)),
+  cards:list(o.cards,c=>{const r={id:c.id,name:ctxt(c.name,40),sd:day(c.sd),dd:day(c.dd),lim:cnum(c.lim,0,MAXAMT,0)};return okId(r.id)&&r.name?r:null}),
+  wallets:list(o.wallets,w=>{const r={id:w.id,name:ctxt(w.name,40)};return okId(r.id)&&r.name?r:null}),
+  paid,lastPay:pay(o.lastPay),
+  pools:list(o.pools,p=>{const r={id:p.id,name:ctxt(p.name,60),target:cnum(p.target,0,MAXAMT,0),dep:list(p.dep,d=>{const q={id:d.id,date:d.date,amt:camt(d.amt)};return okId(q.id)&&okDay(q.date)&&Number.isFinite(q.amt)?q:null})};
+   return okId(r.id)&&r.name?r:null})}}
+function merge(o){S=clean(o)}
+// ---------- PIN keypad: on-screen digits, so the system keyboard never opens.
+const PIN_LEN=6;let PAD=null;const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const padHTML=()=>`<div class="pin"><div class="pdots" role="status" aria-label="0 of ${PIN_LEN} digits entered">${"<i></i>".repeat(PIN_LEN)}</div><p class="pmsg" role="alert"></p>
+ <div class="pkeys">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-k="${n}">${n}</button>`).join("")}<span></span><button type="button" data-k="0">0</button><button type="button" class="fn" data-k="del" aria-label="Delete last digit">⌫</button></div></div>`;
+function padMount(root,onDone){root.innerHTML=padHTML();PAD={buf:"",root,onDone,busy:false};padDraw()}
+function padDraw(){if(!PAD)return;const d=PAD.root.querySelector(".pdots");if(!d)return;d.querySelectorAll("i").forEach((x,i)=>x.classList.toggle("on",i<PAD.buf.length));
+ d.setAttribute("aria-label",PAD.buf.length+" of "+PIN_LEN+" digits entered");PAD.root.querySelectorAll(".pkeys button").forEach(b=>b.disabled=PAD.busy)}
+function padReset(msg,bad){if(!PAD)return;PAD.buf="";padDraw();const m=PAD.root.querySelector(".pmsg");if(m)m.textContent=msg||"";
+ if(bad){const d=PAD.root.querySelector(".pdots");d.classList.remove("bad");void d.offsetWidth;d.classList.add("bad");setTimeout(()=>d.classList.remove("bad"),700);try{navigator.vibrate&&navigator.vibrate([30,40,30])}catch(e){}}}
+async function padKey(k){if(!PAD||PAD.busy)return;const me=PAD;
+ if(k==="del")me.buf=me.buf.slice(0,-1);else if(/^\d$/.test(k)&&me.buf.length<PIN_LEN){me.buf+=k;buzz()}else return;
+ const m=me.root.querySelector(".pmsg");if(m&&me.buf.length===1)m.textContent="";padDraw();
+ if(me.buf.length===PIN_LEN){const pin=me.buf;me.busy=true;padDraw();await sleep(140);try{await me.onDone(pin)}finally{if(PAD===me){me.busy=false;padDraw()}}}}
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(".pkeys button");if(b&&PAD&&PAD.root.contains(b))padKey(b.dataset.k)});
+addEventListener("keydown",e=>{if(!PAD||!PAD.root.isConnected||PAD.root.closest("[hidden]")||e.metaKey||e.ctrlKey||e.altKey)return;const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;
+ if(/^\d$/.test(e.key)){e.preventDefault();padKey(e.key)}else if(e.key==="Backspace"){e.preventDefault();padKey("del")}});
+// A PIN everyone tries first: all the same digit, or a straight run like 123456 / 654321.
+const weakPin=p=>/^(\d)\1+$/.test(p)||"01234567890".includes(p)||"09876543210".includes(p);
+const readEnv=()=>{try{return JSON.parse(localStorage.getItem(ENC_KEY))}catch(e){return null}};
+const isPinEnv=env=>!!env&&env.pin===PIN_LEN;
+// ---------- Lock screen
+let lastAct=Date.now(),hiddenAt=0,lockFails=0;
+function showLock(){closeSheet();$("#shb").innerHTML="";clearTimeout(toastT);const t=$("#toast");t.className="toast";t.innerHTML="";
+ document.querySelectorAll(".view").forEach(v=>v.innerHTML="");$("#lockmark").innerHTML=mark();$("#locke").textContent="";$("#lockp").value="";
+ const pin=isPinEnv(readEnv());$("#lockf").hidden=pin;$("#lockt").textContent=pin?"Enter your PIN":"Enter your passcode to unlock your data.";
+ if(pin)padMount($("#lockpad"),onLockPin);else{$("#lockpad").innerHTML="";PAD=null}
+ $("#lock").hidden=false;if(!pin)setTimeout(()=>{try{$("#lockp").focus()}catch(e){}},60)}
+function lockNow(){if(!LOCK.key)return;LOCK.key=null;LOCK.salt=null;S=clean({});heroPrev=null;lastLv=null;stMsg="";showLock()}
+// Shared unlock: slows down repeated guesses after 5 misses (1s, 2s, 4s … up to 60s).
+async function tryUnlock(secret,wait){if(lockFails>=5){const s=Math.min(60,2**(lockFails-5));wait&&wait(s);await sleep(s*1000)}
+ try{const env=readEnv(),r=await openEnv(secret,env);LOCK.key=r.key;LOCK.salt=r.salt;LOCK.iter=r.iter;LOCK.pin=isPinEnv(env)?PIN_LEN:0;merge(r.data);lockFails=0;
+  PAD=null;$("#lockpad").innerHTML="";$("#lockp").value="";$("#lock").hidden=true;stMsg="Encrypted on this device";lastAct=Date.now();boot();return true}
+ catch(x){lockFails++;return false}}
+async function onLockPin(pin){const T=$("#lockt");T.textContent="Checking…";
+ const ok=await tryUnlock(pin,s=>{T.textContent="Too many tries. Wait "+s+" s…"});if(!ok){T.textContent="Enter your PIN";padReset("Wrong PIN. Try again.",true)}}
+$("#lockf").addEventListener("submit",async e=>{e.preventDefault();const b=$("#lockb"),p=$("#lockp").value;if(!p||b.disabled)return;
+ b.disabled=true;b.textContent="Unlocking…";$("#locke").textContent="";
+ const ok=await tryUnlock(p,s=>{b.textContent="Wait "+s+" s…"});b.disabled=false;b.textContent="Unlock";
+ if(!ok){$("#locke").textContent="Wrong passcode. Try again.";try{$("#lockp").select()}catch(y){}}});
+$("#lockw").onclick=()=>wipeAll();
+["pointerdown","keydown","wheel","touchstart"].forEach(t=>addEventListener(t,()=>{lastAct=Date.now()},{passive:true,capture:true}));
+setInterval(()=>{if(LOCK.key&&Date.now()-lastAct>IDLE_MS)lockNow()},15e3);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)hiddenAt=Date.now();else if(LOCK.key&&hiddenAt&&Date.now()-hiddenAt>HIDDEN_MS)lockNow()});
+// ---------- Set / change / turn off the PIN, one keypad step at a time
+let PF=null;
+const PF_PROMPT={cur:"Enter your current PIN",new:"Choose a 6-digit PIN",again:"Enter the same PIN again"};
+function openPassForm(mode){const T={set:"Set a PIN",change:"Change PIN",off:"Turn off PIN lock"}[mode];if(!T||!CRYPTO_OK)return;
+ // Data locked with an older typed passcode: the app is already unlocked, so skip the "current PIN" step.
+ const legacy=mode!=="set"&&!isPinEnv(readEnv());
+ const steps=(mode==="set"||legacy?[]:["cur"]).concat(mode==="off"?[]:["new","again"]);
+ PF={mode,steps,i:0,nw:""};
+ const info=mode==="set"?`<div class="warnbox">Your data will be encrypted on this device. <b>If you forget your PIN, it can't be recovered.</b> Download a backup first.</div>`
+  :mode==="off"?`<p class="m" style="margin:0 0 6px">Your data will be stored unencrypted on this device again.</p>`:"";
+ if(!steps.length){sheet(`<div class="secf"><h2>${T}</h2>${info}<button class="btn danger big" style="margin-top:10px" onclick="pinOff()">Turn off</button></div>`);return}
+ sheet(`<div class="secf" style="text-align:center"><h2>${T}</h2><div id="pfinfo" style="text-align:left">${info}</div><p class="m" id="pft" style="margin:0;font-size:15px;color:var(--tx);font-weight:600">${PF_PROMPT[steps[0]]}</p><div id="pfpad"></div></div>`);
+ padMount($("#pfpad"),onFormPin)}
+function pfStep(i,msg,bad){PF.i=i;$("#pft").textContent=PF_PROMPT[PF.steps[i]];if(i>0){const inf=$("#pfinfo");if(inf)inf.innerHTML=""}padReset(msg,bad)}
+async function onFormPin(pin){if(!PF)return;const step=PF.steps[PF.i],T=$("#pft");
+ if(step==="cur"){T.textContent="Checking…";try{await openEnv(pin,readEnv())}catch(x){T.textContent=PF_PROMPT.cur;padReset("Wrong PIN. Try again.",true);return}
+  if(PF.mode==="off"){await pinOff();return}pfStep(PF.i+1);return}
+ if(step==="new"){if(weakPin(pin)){padReset("That PIN is too easy to guess. Pick another.",true);return}PF.nw=pin;pfStep(PF.i+1);return}
+ if(step==="again"){if(pin!==PF.nw){PF.nw="";pfStep(PF.steps.indexOf("new"),"Those PINs didn't match. Start again.",true);return}
+  T.textContent="Encrypting…";if(!(await pinSet(pin,PF.mode))){T.textContent=PF_PROMPT.again;padReset("Something went wrong. Nothing was changed.",true)}}}
+async function pinSet(pin,mode){const prev={key:LOCK.key,salt:LOCK.salt,iter:LOCK.iter,pin:LOCK.pin};
+ try{const salt=crypto.getRandomValues(new Uint8Array(16)),key=await deriveKey(pin,salt,KDF_ITER);await LOCK.pending.catch(()=>{});
+  saveSeq++;LOCK.key=key;LOCK.salt=salt;LOCK.iter=KDF_ITER;LOCK.pin=PIN_LEN;
+  const env=await seal(key,salt,KDF_ITER,S);env.pin=PIN_LEN;localStorage.setItem(ENC_KEY,JSON.stringify(env));localStorage.removeItem("trk");
+  PF=null;lastAct=Date.now();closeSheet();render();renderSettings();st("Saved and encrypted on this device");fx(mode==="set"?"PIN set. Your data is encrypted 🔒":"PIN changed");return true}
+ catch(x){Object.assign(LOCK,prev);return false}}
+async function pinOff(){try{await LOCK.pending.catch(()=>{});saveSeq++;LOCK.key=null;LOCK.salt=null;LOCK.pin=0;localStorage.setItem("trk",JSON.stringify(S));localStorage.removeItem(ENC_KEY);
+  PF=null;closeSheet();render();renderSettings();st("Saved on this device");fx("PIN lock turned off")}catch(x){fx("Couldn't turn off the PIN lock")}}
+// ---------- Delete everything Clearflow stored on this device
+async function wipeAll(){if(!confirm("Delete ALL Clearflow data on this device?\n\nBills, spending, cards, savings and settings will be erased. This can't be undone, so download a backup first if you want to keep it."))return;
+ saveSeq++;LOCK.key=null;
+ try{["trk",ENC_KEY,"trk-theme"].forEach(k=>localStorage.removeItem(k));sessionStorage.clear()}catch(e){}
+ try{if(window.caches)await Promise.all((await caches.keys()).map(k=>caches.delete(k)))}catch(e){}
+ try{if(navigator.serviceWorker)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(r=>r.unregister()))}catch(e){}
+ location.replace(location.pathname)}
+function secHTML(){const wipe=`<div class="card"><p class="m" style="margin:0 0 12px">Selling or lending this device? Erase everything Clearflow stored here.</p><button class="btn danger" onclick="wipeAll()">Delete all data on this device</button></div>`;
+ if(!CRYPTO_OK)return `<div class="stitle">Security</div><div class="card"><p class="m" style="margin:0">PIN lock needs the app to be opened over HTTPS.</p></div>`+wipe;
+ const on=!!LOCK.key;
+ return `<div class="stitle">Security</div><div class="card"><p class="m" style="margin:0 0 12px">${on?"🔒 PIN lock on. Your data is encrypted on this device, and the app locks after 5 minutes without use.":"Add a 6-digit PIN to encrypt your data on this device and lock the app when you're away."}</p>
+ <div class="row-btns" style="margin:0">${on?`<button class="btn primary" onclick="lockNow()">Lock now</button><button class="btn" onclick="openPassForm('change')">Change PIN</button><button class="btn" onclick="openPassForm('off')">Turn off</button>`:`<button class="btn primary" onclick="openPassForm('set')">Set a PIN</button>`}</div></div>`+wipe}
+// ---------- Start
+function boot(){themeChrome();render();go(location.hash.slice(1)||"home")}
+if(!FRAMED){
+ themeChrome();
+ if(encOn())showLock();
+ else{let raw=null;try{raw=localStorage.getItem("trk")}catch(e){}try{merge(JSON.parse(raw||"{}"))}catch(e){merge({})}
+  stMsg=raw?"Saved on this device":"Your data stays on this device";boot()}
+ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+ if("serviceWorker" in navigator&&location.protocol!=="file:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
 </script></body></html>
