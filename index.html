@@ -772,7 +772,7 @@ function restore(inp){const f=inp.files[0];inp.value="";if(!f)return;if(f.size>2
   if(isEnv(o)){askBackupPass(o,f.name);return}applyRestore(o,f.name)};rd.readAsText(f)}
 function applyRestore(o,name){if(!o||typeof o!=="object"||!Array.isArray(o.subs)||!Array.isArray(o.exp)){st("That file isn't a Clearflow backup.");fx("That file isn't a Clearflow backup");return}
  if(!confirm("Replace everything in this app with the backup from "+name+"? Anything not in the backup will be lost."))return;
- merge(o);save();render();st("Restored from "+name);fx("Backup restored")}
+ merge(o);save();render();renderSettings();st("Restored from "+name);fx("Backup restored")}
 function askBackupPass(env,name){if(!CRYPTO_OK){st("Encrypted backups need the app to be opened over HTTPS.");return}RST={env,name};
  sheet(`<form class="secf" onsubmit="unlockBackup(event)"><h2>Encrypted backup</h2><p class="m" style="margin:0 0 12px">${esc(name)} is password-protected. Enter the password you set when you downloaded it.</p>
  <input name="p" type="password" autocomplete="current-password" aria-label="Backup password" required><p class="m" id="rste" role="alert" style="color:var(--warn);min-height:18px;margin:0 0 10px"></p><button class="btn primary big">Restore</button></form>`,"input[name=p]")}
@@ -833,11 +833,11 @@ async function savePass(e,mode){e.preventDefault();const f=e.target.elements,b=e
   if(mode!=="set"){try{await openEnv(f.cp.value,JSON.parse(localStorage.getItem(ENC_KEY)))}catch(x){err("The current passcode is wrong.");return}}
   await LOCK.pending.catch(()=>{});
   if(mode==="off"){saveSeq++;LOCK.key=null;LOCK.salt=null;localStorage.setItem("trk",JSON.stringify(S));localStorage.removeItem(ENC_KEY);
-   closeSheet();render();st("Saved on this device");fx("Passcode turned off");return}
+   closeSheet();render();renderSettings();st("Saved on this device");fx("Passcode turned off");return}
   const salt=crypto.getRandomValues(new Uint8Array(16)),key=await deriveKey(f.p1.value,salt,KDF_ITER);
   saveSeq++;LOCK.key=key;LOCK.salt=salt;LOCK.iter=KDF_ITER;
   const env=await seal(key,salt,KDF_ITER,S);localStorage.setItem(ENC_KEY,JSON.stringify(env));localStorage.removeItem("trk");
-  lastAct=Date.now();closeSheet();render();st("Saved and encrypted on this device");fx(mode==="set"?"Passcode set. Your data is encrypted 🔒":"Passcode changed")}
+  lastAct=Date.now();closeSheet();render();renderSettings();st("Saved and encrypted on this device");fx(mode==="set"?"Passcode set. Your data is encrypted 🔒":"Passcode changed")}
  catch(x){Object.assign(LOCK,prev);err("Something went wrong. Nothing was changed.")}
  finally{b.disabled=false;b.textContent=lbl}}
 // ---------- Delete everything Clearflow stored on this device
