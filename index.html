@@ -676,7 +676,7 @@ function imp(files){[...files].forEach(f=>{const rd=new FileReader();rd.onload=(
    const key=[o.date,o.cat,o.amt,o.note].join("|");if(k.has(key))return;k.add(key);S.exp.push(o);n++})}
  else{st("Not recognised: "+f.name);return}
  save();render();st("Imported "+n+" rows from "+f.name);fx("Imported "+pl(n,"row"))};rd.readAsText(f)})}
-function backup(){dl("money-tracker-backup-"+iso(new Date())+".json",JSON.stringify(S,null,1),"application/json")}
+function backup(){dl("clearflow-backup-"+iso(new Date())+".json",JSON.stringify(S,null,1),"application/json")}
 function restore(inp){const f=inp.files[0];inp.value="";if(!f)return;const rd=new FileReader();
  rd.onload=()=>{try{const o=JSON.parse(String(rd.result).replace(/^﻿/,""));if(!o||!Array.isArray(o.subs)||!Array.isArray(o.exp))throw 0;
   if(!confirm("Replace everything in this app with the backup from "+f.name+"? Anything not in the backup will be lost."))return;
