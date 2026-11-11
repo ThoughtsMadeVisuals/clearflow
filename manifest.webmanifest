@@ -1,13 +1,13 @@
 {
-  "name": "Money Tracker",
-  "short_name": "Money",
+  "name": "Clearflow · Money Tracker",
+  "short_name": "Clearflow",
   "description": "Track bills, subscriptions, daily spending, credit cards and company expenses. Works offline; data stays on your device.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f6f5f1",
-  "theme_color": "#2f6f5e",
+  "background_color": "#e7ebee",
+  "theme_color": "#e7ebee",
   "icons": [
     {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
     {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
