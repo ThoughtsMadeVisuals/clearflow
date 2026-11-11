@@ -306,12 +306,30 @@ details.more .item+.item::before{left:0}
  body.lock .wrap,body.lock .ti{transform:none;filter:none}}
 /* Passcode lock screen */
 .lockscr{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:var(--bg)}
-.lockscr form{width:100%;max-width:360px;text-align:center}
 .lockscr h2{margin:10px 0 4px;font-size:21px;letter-spacing:-.02em}
 .lockscr .mark{width:64px;height:64px}
 .lockscr input{text-align:center;margin:16px 0 12px;font-size:18px;letter-spacing:.08em}
 .lockscr .err{color:var(--warn);min-height:20px;font-size:13.5px;margin:0 0 10px}
 .lockscr .link{margin-top:18px}
+.lockscr .lockin{width:100%;max-width:360px;text-align:center}
+.lockscr form{width:100%;text-align:center}
+/* On-screen PIN keypad (no system keyboard) */
+.pin{display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-user-select:none}
+.pdots{display:flex;gap:14px;justify-content:center;margin:20px 0 8px;height:14px}
+.pdots i{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--mut);transition:background-color .12s ease,box-shadow .12s ease,transform .12s var(--ease-out)}
+.pdots i.on{background:var(--tx);box-shadow:none;transform:scale(1.08)}
+.pdots.bad{animation:pshake .42s var(--ease-out)}
+.pdots.bad i{box-shadow:inset 0 0 0 1.5px var(--warn)}
+@keyframes pshake{15%,55%{transform:translateX(-9px)}35%,75%{transform:translateX(9px)}}
+.pmsg{min-height:20px;font-size:13.5px;color:var(--warn);margin:0 0 6px;text-align:center}
+.pkeys{display:grid;grid-template-columns:repeat(3,72px);gap:12px 24px;justify-content:center}
+.pkeys button{width:72px;height:72px;border-radius:50%;border:0;padding:0;background:var(--soft);color:var(--tx);box-shadow:inset 0 0 0 1px var(--hair);font:500 28px/1 var(--fd);font-variant-numeric:tabular-nums;touch-action:manipulation;transition:transform .12s var(--ease-out),background-color .15s ease}
+.pkeys button:active{transform:scale(.92);background:var(--press)}
+.pkeys button.fn{background:none;box-shadow:none;font-size:24px;color:var(--mut)}
+.pkeys button:disabled{opacity:.45}
+.pkeys button:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+@media (max-height:700px){.pkeys{grid-template-columns:repeat(3,64px);gap:10px 22px}.pkeys button{width:64px;height:64px;font-size:25px}.pdots{margin:14px 0 6px}}
+@media (max-height:600px){.pkeys{grid-template-columns:repeat(3,58px);gap:8px 22px}.pkeys button{width:58px;height:58px;font-size:23px}.secf h2{margin:2px 0 6px}.secf .warnbox{margin:0 0 8px;padding:8px 12px}}
 .secf input{margin-bottom:10px}
 .secf .warnbox{background:var(--warns);color:var(--tx);border-radius:14px;padding:10px 12px;font-size:13.5px;margin:4px 0 14px;text-align:left}
 </style></head><body>
@@ -342,12 +360,12 @@ details.more .item+.item::before{left:0}
 </div></nav>
 <div class="sw" id="sw" hidden><div class="scrim" onclick="closeSheet()"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1"><div class="grab" id="grab"><i></i></div><div id="shb"></div></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<div class="lockscr" id="lock" hidden role="dialog" aria-modal="true" aria-labelledby="lockh"><form id="lockf" autocomplete="off">
- <span id="lockmark"></span><h2 id="lockh">Clearflow is locked</h2><p class="m" style="margin:0">Enter your passcode to unlock your data.</p>
- <input id="lockp" type="password" autocomplete="current-password" aria-label="Passcode" required>
- <p class="err" id="locke" role="alert"></p>
- <button class="btn primary big" id="lockb">Unlock</button>
- <button type="button" class="link" id="lockw">Forgot passcode? Erase all data</button></form></div>
+<div class="lockscr" id="lock" hidden role="dialog" aria-modal="true" aria-labelledby="lockh"><div class="lockin">
+ <span id="lockmark"></span><h2 id="lockh">Clearflow is locked</h2><p class="m" id="lockt" style="margin:0">Enter your PIN</p>
+ <div id="lockpad"></div>
+ <form id="lockf" hidden autocomplete="off"><input id="lockp" type="password" autocomplete="current-password" aria-label="Passcode">
+ <p class="err" id="locke" role="alert"></p><button class="btn primary big" id="lockb">Unlock</button></form>
+ <button type="button" class="link" id="lockw">Forgot your PIN? Erase all data</button></div></div>
 <script>
 const SC=["Streaming","Software","Music","Gaming","Utilities","Insurance","Fitness","Rent","Other"];
 const EC=["Food","Coffee","Groceries","Transport","Bills","Shopping","Health","Fun","Other"];
@@ -382,7 +400,7 @@ function when(d){const n=days(d);return n===0?"today":n===1?"tomorrow":n===-1?"y
 // PBKDF2-SHA256 turns the passcode into an AES-256-GCM key. Only ciphertext is stored; the key lives in memory while unlocked.
 const CRYPTO_OK=!!(window.isSecureContext&&window.crypto&&crypto.subtle);
 const KDF_ITER=600000,ENC_KEY="trk-enc",IDLE_MS=5*60e3,HIDDEN_MS=60e3;
-const LOCK={key:null,salt:null,iter:KDF_ITER,pending:Promise.resolve()};
+const LOCK={key:null,salt:null,iter:KDF_ITER,pin:0,pending:Promise.resolve()};
 const encOn=()=>{try{return !!localStorage.getItem(ENC_KEY)}catch(e){return false}};
 function b64(buf){const u=new Uint8Array(buf);let s="";for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)}
 function unb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
@@ -398,7 +416,7 @@ async function openEnv(pass,env){if(!isEnv(env))throw new Error("format");const 
  return{key,salt,iter:env.iter,data:JSON.parse(new TextDecoder().decode(pt))}}
 let saveSeq=0;
 function save(){
- if(LOCK.key){const n=++saveSeq,p=seal(LOCK.key,LOCK.salt,LOCK.iter,S).then(env=>{if(n!==saveSeq)return;localStorage.setItem(ENC_KEY,JSON.stringify(env));localStorage.removeItem("trk");st("Saved and encrypted on this device")})
+ if(LOCK.key){const n=++saveSeq,p=seal(LOCK.key,LOCK.salt,LOCK.iter,S).then(env=>{if(n!==saveSeq)return;if(LOCK.pin)env.pin=LOCK.pin;localStorage.setItem(ENC_KEY,JSON.stringify(env));localStorage.removeItem("trk");st("Saved and encrypted on this device")})
    .catch(()=>st("Couldn't save. Check your browser storage settings."));LOCK.pending=LOCK.pending.then(()=>p);return}
  if(encOn())return; // locked: never write plaintext over the encrypted copy
  try{localStorage.setItem("trk",JSON.stringify(S));st("Saved on this device")}catch(e){st("Couldn't save. Check your browser storage settings.")}}
@@ -458,7 +476,7 @@ let sheetOpen=false,lastFocus=null;
 function sheet(html,focusSel){const w=$("#sw"),b=$("#shb");b.innerHTML=html;
  if(!sheetOpen){lastFocus=document.activeElement;$(".wrap").style.transformOrigin=`50% ${scrollY+innerHeight/2}px`;w.classList.remove("out");w.hidden=false;void w.offsetWidth;w.classList.add("on");document.body.classList.add("lock");sheetOpen=true;$("#sheet").scrollTop=0}
  const f=focusSel&&b.querySelector(focusSel);try{(f||$("#sheet")).focus({preventScroll:true})}catch(e){}}
-function closeSheet(){if(!sheetOpen)return;sheetOpen=false;addPrev=null;const w=$("#sw");w.classList.add("out");w.classList.remove("on");document.body.classList.remove("lock");
+function closeSheet(){if(!sheetOpen)return;sheetOpen=false;if(PAD&&$("#shb").contains(PAD.root))PAD=null;PF=null;addPrev=null;const w=$("#sw");w.classList.add("out");w.classList.remove("on");document.body.classList.remove("lock");
  setTimeout(()=>{if(!sheetOpen){w.hidden=true;$("#shb").innerHTML=""}},360);
  if(lastFocus&&document.body.contains(lastFocus))try{lastFocus.focus({preventScroll:true})}catch(e){}}
 addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
@@ -802,44 +820,77 @@ function clean(o){o=o&&typeof o==="object"&&!Array.isArray(o)?o:{};
   pools:list(o.pools,p=>{const r={id:p.id,name:ctxt(p.name,60),target:cnum(p.target,0,MAXAMT,0),dep:list(p.dep,d=>{const q={id:d.id,date:d.date,amt:camt(d.amt)};return okId(q.id)&&okDay(q.date)&&Number.isFinite(q.amt)?q:null})};
    return okId(r.id)&&r.name?r:null})}}
 function merge(o){S=clean(o)}
-// ---------- Passcode lock
+// ---------- PIN keypad: on-screen digits, so the system keyboard never opens.
+const PIN_LEN=6;let PAD=null;const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const padHTML=()=>`<div class="pin"><div class="pdots" role="status" aria-label="0 of ${PIN_LEN} digits entered">${"<i></i>".repeat(PIN_LEN)}</div><p class="pmsg" role="alert"></p>
+ <div class="pkeys">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-k="${n}">${n}</button>`).join("")}<span></span><button type="button" data-k="0">0</button><button type="button" class="fn" data-k="del" aria-label="Delete last digit">⌫</button></div></div>`;
+function padMount(root,onDone){root.innerHTML=padHTML();PAD={buf:"",root,onDone,busy:false};padDraw()}
+function padDraw(){if(!PAD)return;const d=PAD.root.querySelector(".pdots");if(!d)return;d.querySelectorAll("i").forEach((x,i)=>x.classList.toggle("on",i<PAD.buf.length));
+ d.setAttribute("aria-label",PAD.buf.length+" of "+PIN_LEN+" digits entered");PAD.root.querySelectorAll(".pkeys button").forEach(b=>b.disabled=PAD.busy)}
+function padReset(msg,bad){if(!PAD)return;PAD.buf="";padDraw();const m=PAD.root.querySelector(".pmsg");if(m)m.textContent=msg||"";
+ if(bad){const d=PAD.root.querySelector(".pdots");d.classList.remove("bad");void d.offsetWidth;d.classList.add("bad");setTimeout(()=>d.classList.remove("bad"),700);try{navigator.vibrate&&navigator.vibrate([30,40,30])}catch(e){}}}
+async function padKey(k){if(!PAD||PAD.busy)return;const me=PAD;
+ if(k==="del")me.buf=me.buf.slice(0,-1);else if(/^\d$/.test(k)&&me.buf.length<PIN_LEN){me.buf+=k;buzz()}else return;
+ const m=me.root.querySelector(".pmsg");if(m&&me.buf.length===1)m.textContent="";padDraw();
+ if(me.buf.length===PIN_LEN){const pin=me.buf;me.busy=true;padDraw();await sleep(140);try{await me.onDone(pin)}finally{if(PAD===me){me.busy=false;padDraw()}}}}
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(".pkeys button");if(b&&PAD&&PAD.root.contains(b))padKey(b.dataset.k)});
+addEventListener("keydown",e=>{if(!PAD||!PAD.root.isConnected||PAD.root.closest("[hidden]")||e.metaKey||e.ctrlKey||e.altKey)return;const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;
+ if(/^\d$/.test(e.key)){e.preventDefault();padKey(e.key)}else if(e.key==="Backspace"){e.preventDefault();padKey("del")}});
+// A PIN everyone tries first: all the same digit, or a straight run like 123456 / 654321.
+const weakPin=p=>/^(\d)\1+$/.test(p)||"01234567890".includes(p)||"09876543210".includes(p);
+const readEnv=()=>{try{return JSON.parse(localStorage.getItem(ENC_KEY))}catch(e){return null}};
+const isPinEnv=env=>!!env&&env.pin===PIN_LEN;
+// ---------- Lock screen
 let lastAct=Date.now(),hiddenAt=0,lockFails=0;
 function showLock(){closeSheet();$("#shb").innerHTML="";clearTimeout(toastT);const t=$("#toast");t.className="toast";t.innerHTML="";
  document.querySelectorAll(".view").forEach(v=>v.innerHTML="");$("#lockmark").innerHTML=mark();$("#locke").textContent="";$("#lockp").value="";
- $("#lock").hidden=false;setTimeout(()=>{try{$("#lockp").focus()}catch(e){}},60)}
+ const pin=isPinEnv(readEnv());$("#lockf").hidden=pin;$("#lockt").textContent=pin?"Enter your PIN":"Enter your passcode to unlock your data.";
+ if(pin)padMount($("#lockpad"),onLockPin);else{$("#lockpad").innerHTML="";PAD=null}
+ $("#lock").hidden=false;if(!pin)setTimeout(()=>{try{$("#lockp").focus()}catch(e){}},60)}
 function lockNow(){if(!LOCK.key)return;LOCK.key=null;LOCK.salt=null;S=clean({});heroPrev=null;lastLv=null;stMsg="";showLock()}
+// Shared unlock: slows down repeated guesses after 5 misses (1s, 2s, 4s … up to 60s).
+async function tryUnlock(secret,wait){if(lockFails>=5){const s=Math.min(60,2**(lockFails-5));wait&&wait(s);await sleep(s*1000)}
+ try{const env=readEnv(),r=await openEnv(secret,env);LOCK.key=r.key;LOCK.salt=r.salt;LOCK.iter=r.iter;LOCK.pin=isPinEnv(env)?PIN_LEN:0;merge(r.data);lockFails=0;
+  PAD=null;$("#lockpad").innerHTML="";$("#lockp").value="";$("#lock").hidden=true;stMsg="Encrypted on this device";lastAct=Date.now();boot();return true}
+ catch(x){lockFails++;return false}}
+async function onLockPin(pin){const T=$("#lockt");T.textContent="Checking…";
+ const ok=await tryUnlock(pin,s=>{T.textContent="Too many tries. Wait "+s+" s…"});if(!ok){T.textContent="Enter your PIN";padReset("Wrong PIN. Try again.",true)}}
 $("#lockf").addEventListener("submit",async e=>{e.preventDefault();const b=$("#lockb"),p=$("#lockp").value;if(!p||b.disabled)return;
  b.disabled=true;b.textContent="Unlocking…";$("#locke").textContent="";
- // Slow down repeated guesses after 5 misses (1s, 2s, 4s … up to 60s).
- if(lockFails>=5)await new Promise(r=>setTimeout(r,Math.min(60,2**(lockFails-5))*1000));
- try{const r=await openEnv(p,JSON.parse(localStorage.getItem(ENC_KEY)));LOCK.key=r.key;LOCK.salt=r.salt;LOCK.iter=r.iter;merge(r.data);lockFails=0;
-  $("#lockp").value="";$("#lock").hidden=true;stMsg="Encrypted on this device";lastAct=Date.now();boot()}
- catch(x){lockFails++;$("#locke").textContent="Wrong passcode. Try again.";try{$("#lockp").select()}catch(y){}}
- finally{b.disabled=false;b.textContent="Unlock"}});
+ const ok=await tryUnlock(p,s=>{b.textContent="Wait "+s+" s…"});b.disabled=false;b.textContent="Unlock";
+ if(!ok){$("#locke").textContent="Wrong passcode. Try again.";try{$("#lockp").select()}catch(y){}}});
 $("#lockw").onclick=()=>wipeAll();
 ["pointerdown","keydown","wheel","touchstart"].forEach(t=>addEventListener(t,()=>{lastAct=Date.now()},{passive:true,capture:true}));
 setInterval(()=>{if(LOCK.key&&Date.now()-lastAct>IDLE_MS)lockNow()},15e3);
 document.addEventListener("visibilitychange",()=>{if(document.hidden)hiddenAt=Date.now();else if(LOCK.key&&hiddenAt&&Date.now()-hiddenAt>HIDDEN_MS)lockNow()});
-function openPassForm(mode){const T={set:"Set a passcode",change:"Change passcode",off:"Turn off passcode"}[mode];if(!T||!CRYPTO_OK)return;
- const cur=mode!=="set"?`<input name="cp" type="password" autocomplete="current-password" placeholder="Current passcode" aria-label="Current passcode" required>`:"";
- const nw=mode!=="off"?`<input name="p1" type="password" autocomplete="new-password" placeholder="New passcode, at least 4 characters" aria-label="New passcode" required><input name="p2" type="password" autocomplete="new-password" placeholder="Repeat passcode" aria-label="Repeat passcode" required>`:"";
- const info=mode==="set"?`<p class="m" style="margin:0 0 12px">Your data will be encrypted on this device. The app locks after 5 minutes without use, or 1 minute in the background.</p><div class="warnbox"><b>If you forget the passcode, your data can't be recovered.</b> Download a backup first.</div>`
-  :mode==="off"?`<p class="m" style="margin:0 0 12px">Your data will be stored unencrypted on this device again.</p>`:"";
- sheet(`<form class="secf" onsubmit="savePass(event,'${mode}')"><h2>${T}</h2>${info}${cur}${nw}<p class="m" id="pse" role="alert" style="color:var(--warn);min-height:18px;margin:0 0 10px"></p><button class="btn ${mode==="off"?"danger":"primary"} big">${T}</button></form>`,"input")}
-async function savePass(e,mode){e.preventDefault();const f=e.target.elements,b=e.target.querySelector("button.big"),err=t=>{$("#pse").textContent=t};
- if(mode!=="off"){if(f.p1.value.length<4)return err("Use at least 4 characters.");if(f.p1.value!==f.p2.value)return err("The passcodes don't match.")}
- const lbl=b.textContent,prev={key:LOCK.key,salt:LOCK.salt,iter:LOCK.iter};b.disabled=true;b.textContent="Working…";
- try{
-  if(mode!=="set"){try{await openEnv(f.cp.value,JSON.parse(localStorage.getItem(ENC_KEY)))}catch(x){err("The current passcode is wrong.");return}}
-  await LOCK.pending.catch(()=>{});
-  if(mode==="off"){saveSeq++;LOCK.key=null;LOCK.salt=null;localStorage.setItem("trk",JSON.stringify(S));localStorage.removeItem(ENC_KEY);
-   closeSheet();render();renderSettings();st("Saved on this device");fx("Passcode turned off");return}
-  const salt=crypto.getRandomValues(new Uint8Array(16)),key=await deriveKey(f.p1.value,salt,KDF_ITER);
-  saveSeq++;LOCK.key=key;LOCK.salt=salt;LOCK.iter=KDF_ITER;
-  const env=await seal(key,salt,KDF_ITER,S);localStorage.setItem(ENC_KEY,JSON.stringify(env));localStorage.removeItem("trk");
-  lastAct=Date.now();closeSheet();render();renderSettings();st("Saved and encrypted on this device");fx(mode==="set"?"Passcode set. Your data is encrypted 🔒":"Passcode changed")}
- catch(x){Object.assign(LOCK,prev);err("Something went wrong. Nothing was changed.")}
- finally{b.disabled=false;b.textContent=lbl}}
+// ---------- Set / change / turn off the PIN, one keypad step at a time
+let PF=null;
+const PF_PROMPT={cur:"Enter your current PIN",new:"Choose a 6-digit PIN",again:"Enter the same PIN again"};
+function openPassForm(mode){const T={set:"Set a PIN",change:"Change PIN",off:"Turn off PIN lock"}[mode];if(!T||!CRYPTO_OK)return;
+ // Data locked with an older typed passcode: the app is already unlocked, so skip the "current PIN" step.
+ const legacy=mode!=="set"&&!isPinEnv(readEnv());
+ const steps=(mode==="set"||legacy?[]:["cur"]).concat(mode==="off"?[]:["new","again"]);
+ PF={mode,steps,i:0,nw:""};
+ const info=mode==="set"?`<div class="warnbox">Your data will be encrypted on this device. <b>If you forget your PIN, it can't be recovered.</b> Download a backup first.</div>`
+  :mode==="off"?`<p class="m" style="margin:0 0 6px">Your data will be stored unencrypted on this device again.</p>`:"";
+ if(!steps.length){sheet(`<div class="secf"><h2>${T}</h2>${info}<button class="btn danger big" style="margin-top:10px" onclick="pinOff()">Turn off</button></div>`);return}
+ sheet(`<div class="secf" style="text-align:center"><h2>${T}</h2><div id="pfinfo" style="text-align:left">${info}</div><p class="m" id="pft" style="margin:0;font-size:15px;color:var(--tx);font-weight:600">${PF_PROMPT[steps[0]]}</p><div id="pfpad"></div></div>`);
+ padMount($("#pfpad"),onFormPin)}
+function pfStep(i,msg,bad){PF.i=i;$("#pft").textContent=PF_PROMPT[PF.steps[i]];if(i>0){const inf=$("#pfinfo");if(inf)inf.innerHTML=""}padReset(msg,bad)}
+async function onFormPin(pin){if(!PF)return;const step=PF.steps[PF.i],T=$("#pft");
+ if(step==="cur"){T.textContent="Checking…";try{await openEnv(pin,readEnv())}catch(x){T.textContent=PF_PROMPT.cur;padReset("Wrong PIN. Try again.",true);return}
+  if(PF.mode==="off"){await pinOff();return}pfStep(PF.i+1);return}
+ if(step==="new"){if(weakPin(pin)){padReset("That PIN is too easy to guess. Pick another.",true);return}PF.nw=pin;pfStep(PF.i+1);return}
+ if(step==="again"){if(pin!==PF.nw){PF.nw="";pfStep(PF.steps.indexOf("new"),"Those PINs didn't match. Start again.",true);return}
+  T.textContent="Encrypting…";if(!(await pinSet(pin,PF.mode))){T.textContent=PF_PROMPT.again;padReset("Something went wrong. Nothing was changed.",true)}}}
+async function pinSet(pin,mode){const prev={key:LOCK.key,salt:LOCK.salt,iter:LOCK.iter,pin:LOCK.pin};
+ try{const salt=crypto.getRandomValues(new Uint8Array(16)),key=await deriveKey(pin,salt,KDF_ITER);await LOCK.pending.catch(()=>{});
+  saveSeq++;LOCK.key=key;LOCK.salt=salt;LOCK.iter=KDF_ITER;LOCK.pin=PIN_LEN;
+  const env=await seal(key,salt,KDF_ITER,S);env.pin=PIN_LEN;localStorage.setItem(ENC_KEY,JSON.stringify(env));localStorage.removeItem("trk");
+  PF=null;lastAct=Date.now();closeSheet();render();renderSettings();st("Saved and encrypted on this device");fx(mode==="set"?"PIN set. Your data is encrypted 🔒":"PIN changed");return true}
+ catch(x){Object.assign(LOCK,prev);return false}}
+async function pinOff(){try{await LOCK.pending.catch(()=>{});saveSeq++;LOCK.key=null;LOCK.salt=null;LOCK.pin=0;localStorage.setItem("trk",JSON.stringify(S));localStorage.removeItem(ENC_KEY);
+  PF=null;closeSheet();render();renderSettings();st("Saved on this device");fx("PIN lock turned off")}catch(x){fx("Couldn't turn off the PIN lock")}}
 // ---------- Delete everything Clearflow stored on this device
 async function wipeAll(){if(!confirm("Delete ALL Clearflow data on this device?\n\nBills, spending, cards, savings and settings will be erased. This can't be undone, so download a backup first if you want to keep it."))return;
  saveSeq++;LOCK.key=null;
@@ -848,10 +899,10 @@ async function wipeAll(){if(!confirm("Delete ALL Clearflow data on this device?\
  try{if(navigator.serviceWorker)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(r=>r.unregister()))}catch(e){}
  location.replace(location.pathname)}
 function secHTML(){const wipe=`<div class="card"><p class="m" style="margin:0 0 12px">Selling or lending this device? Erase everything Clearflow stored here.</p><button class="btn danger" onclick="wipeAll()">Delete all data on this device</button></div>`;
- if(!CRYPTO_OK)return `<div class="stitle">Security</div><div class="card"><p class="m" style="margin:0">Passcode lock needs the app to be opened over HTTPS.</p></div>`+wipe;
+ if(!CRYPTO_OK)return `<div class="stitle">Security</div><div class="card"><p class="m" style="margin:0">PIN lock needs the app to be opened over HTTPS.</p></div>`+wipe;
  const on=!!LOCK.key;
- return `<div class="stitle">Security</div><div class="card"><p class="m" style="margin:0 0 12px">${on?"🔒 Passcode on. Your data is encrypted on this device, and the app locks after 5 minutes without use.":"Add a passcode to encrypt your data on this device and lock the app when you're away."}</p>
- <div class="row-btns" style="margin:0">${on?`<button class="btn primary" onclick="lockNow()">Lock now</button><button class="btn" onclick="openPassForm('change')">Change passcode</button><button class="btn" onclick="openPassForm('off')">Turn off</button>`:`<button class="btn primary" onclick="openPassForm('set')">Set a passcode</button>`}</div></div>`+wipe}
+ return `<div class="stitle">Security</div><div class="card"><p class="m" style="margin:0 0 12px">${on?"🔒 PIN lock on. Your data is encrypted on this device, and the app locks after 5 minutes without use.":"Add a 6-digit PIN to encrypt your data on this device and lock the app when you're away."}</p>
+ <div class="row-btns" style="margin:0">${on?`<button class="btn primary" onclick="lockNow()">Lock now</button><button class="btn" onclick="openPassForm('change')">Change PIN</button><button class="btn" onclick="openPassForm('off')">Turn off</button>`:`<button class="btn primary" onclick="openPassForm('set')">Set a PIN</button>`}</div></div>`+wipe}
 // ---------- Start
 function boot(){themeChrome();render();go(location.hash.slice(1)||"home")}
 if(!FRAMED){
