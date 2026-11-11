@@ -1,13 +1,14 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>Money Tracker</title>
+<title>Clearflow · Money Tracker</title>
 <meta name="theme-color" content="#e7ebee" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#080b0d" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Money">
+<meta name="apple-mobile-web-app-title" content="Clearflow">
+<meta name="application-name" content="Clearflow">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -679,7 +680,7 @@ function backup(){dl("money-tracker-backup-"+iso(new Date())+".json",JSON.string
 function restore(inp){const f=inp.files[0];inp.value="";if(!f)return;const rd=new FileReader();
  rd.onload=()=>{try{const o=JSON.parse(String(rd.result).replace(/^﻿/,""));if(!o||!Array.isArray(o.subs)||!Array.isArray(o.exp))throw 0;
   if(!confirm("Replace everything in this app with the backup from "+f.name+"? Anything not in the backup will be lost."))return;
-  merge(o);save();render();st("Restored from "+f.name);fx("Backup restored")}catch(e){st("That file isn't a Money Tracker backup.")}};rd.readAsText(f)}
+  merge(o);save();render();st("Restored from "+f.name);fx("Backup restored")}catch(e){st("That file isn't a Clearflow backup.")}};rd.readAsText(f)}
 function merge(o){S=Object.assign({cur:"RM",budget:0,subs:[],exp:[],co:[],cards:[],wallets:[],paid:{},lastPay:"",pools:[]},o);["subs","exp","co","cards","wallets","pools"].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});if(!S.paid||typeof S.paid!=="object")S.paid={};S.pools.forEach(p=>{if(!Array.isArray(p.dep))p.dep=[]})}
 try{merge(JSON.parse(localStorage.getItem("trk")||"{}"))}catch(e){}
 stMsg=localStorage.getItem("trk")?"Saved on this device":"Your data stays on this device";

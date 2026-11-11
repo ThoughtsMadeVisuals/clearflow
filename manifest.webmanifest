@@ -1,6 +1,6 @@
 {
-  "name": "Money Tracker",
-  "short_name": "Money",
+  "name": "Clearflow · Money Tracker",
+  "short_name": "Clearflow",
   "description": "Track bills, subscriptions, daily spending, credit cards and company expenses. Works offline; data stays on your device.",
   "start_url": "./",
   "scope": "./",

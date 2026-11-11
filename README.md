@@ -1,4 +1,6 @@
-# Money Tracker
+# Clearflow
+
+**Money Tracker** · see clearly where your money flows.
 
 A personal tracker for bills and subscriptions, daily spending, credit cards, e-wallets and company expenses.
 
