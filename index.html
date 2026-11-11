@@ -266,6 +266,26 @@ details.more .item+.item::before{left:0}
 .set .seg{margin:0;width:200px}
 .welcome{text-align:center;padding:26px 20px}
 .welcome .em{font-size:42px}
+.mark{display:block;width:64px;height:64px;margin:0 auto}
+.mark .mk-bg1{stop-color:#f1f4f6}.mark .mk-bg2{stop-color:#dde3e7}.mark .mk-tile{fill:#fff}
+.mark .mk-w1{stop-color:var(--ac)}.mark .mk-w2{stop-color:var(--ac2)}.mark .mk-sun{fill:var(--save)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mark .mk-bg1{stop-color:#20262b}:root:not([data-theme="light"]) .mark .mk-bg2{stop-color:#121619}:root:not([data-theme="light"]) .mark .mk-tile{fill:#0b171e}}
+:root[data-theme="dark"] .mark .mk-bg1{stop-color:#20262b}:root[data-theme="dark"] .mark .mk-bg2{stop-color:#121619}:root[data-theme="dark"] .mark .mk-tile{fill:#0b171e}
+#title.brand{display:flex;align-items:center;gap:8px;font-size:24px;letter-spacing:-.025em;min-width:0}
+#title.brand .mark{width:30px;height:30px;margin:0;flex:none}
+.tagline{font-size:13px;color:var(--mut);margin:-2px 0 6px;letter-spacing:.01em}
+.ripple{position:fixed;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;pointer-events:none;z-index:60;border:2px solid var(--ac);animation:ripple .9s var(--ease-out) forwards}
+.ripple.r2{animation-delay:.12s;opacity:0}
+.ripple.fill{border-color:var(--save)}
+@keyframes ripple{0%{transform:scale(.6);opacity:.8}100%{transform:scale(4.5);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ripple{display:none}}
+.depth{display:flex;align-items:flex-end;gap:6px;height:74px;margin:14px 0 4px}
+.depth div{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.depth i{display:block;width:100%;border-radius:5px;background:var(--ac);transition:height .8s var(--ease-out)}
+.depth div.off i{background:var(--soft);box-shadow:inset 0 0 0 1px var(--hair)}
+.depth div.cur i{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--ac)}
+.depth small{font-size:9.5px;color:var(--mut);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.depth div.cur small{color:var(--act);font-weight:700}
 .welcome h2{margin:6px 0 4px;font-size:21px;letter-spacing:-.02em}
 /* Toast: rises from and returns to the same edge */
 .toast{position:fixed;left:50%;bottom:calc(98px + env(safe-area-inset-bottom,0px));transform:translate(-50%,18px) scale(.96);opacity:0;pointer-events:none;background:color-mix(in srgb,var(--tx) 86%,transparent);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:var(--bg);padding:12px 16px;border-radius:18px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);display:flex;align-items:center;gap:14px;transition:opacity .25s ease,transform .45s var(--ease-out);z-index:40;box-shadow:0 10px 30px rgba(0,0,0,.22)}
@@ -281,7 +301,7 @@ details.more .item+.item::before{left:0}
 </style></head><body>
 <header class="top"><div class="ti">
  <button class="back" id="back" hidden onclick="go('more')" aria-label="Back">‹</button>
- <h1 id="title">Home</h1>
+ <h1 id="title" class="brand">Clearflow</h1>
  <div class="mn" id="mn"><button onclick="shift(-1)" aria-label="Previous month">‹</button><button class="ml" id="ml" onclick="month=iso(new Date()).slice(0,7);render()" aria-label="Go to this month"></button><button onclick="shift(1)" aria-label="Next month">›</button></div>
  <button class="iconbtn" id="thb" onclick="toggleTheme(event)"></button>
 </div></header>
@@ -358,6 +378,10 @@ const okDate=d=>/^\d{4}-\d\d-\d\d$/.test(d||"");
 const savedIn=mk=>S.pools.reduce((a,p)=>a+p.dep.filter(d=>d.date.startsWith(mk)).reduce((b,d)=>b+d.amt,0),0);
 const LV=[[0,"Puddle"],[100,"Pond"],[300,"Stream"],[700,"River"],[1500,"Lake"],[3000,"Sea"],[6000,"Ocean"]];
 let lastLv=null;
+let markN=0;
+function mark(){const n=++markN;return `<svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="mkb${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="mk-bg1"/><stop offset="1" class="mk-bg2"/></linearGradient><linearGradient id="mkw${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="mk-w1"/><stop offset="1" class="mk-w2"/></linearGradient><clipPath id="mkc${n}"><rect x="96" y="96" width="320" height="320" rx="64"/></clipPath></defs><rect width="512" height="512" rx="112" fill="url(#mkb${n})"/><rect class="mk-tile" x="96" y="96" width="320" height="320" rx="64"/><path clip-path="url(#mkc${n})" d="M96 300C160 268 208 276 256 296S360 320 416 288V416H96Z" fill="url(#mkw${n})"/><circle class="mk-sun" cx="356" cy="156" r="22"/></svg>`}
+function ripple(kind){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;const f=document.querySelector(".tb .fab");if(!f)return;const r=f.getBoundingClientRect();
+ for(const c of ["","r2"]){const d=document.createElement("div");d.className="ripple "+c+" "+(kind||"");d.style.left=(r.left+r.width/2)+"px";d.style.top=(r.top+r.height/2)+"px";document.body.appendChild(d);setTimeout(()=>d.remove(),1200)}}catch(e){}}
 function game(){const tdy=new Date();tdy.setHours(0,0,0,0);const tk=iso(tdy);
  const commit=S.subs.filter(s=>s.on!==false).reduce((a,s)=>a+mo(s),0),perDay={};
  S.exp.forEach(e=>perDay[e.date]=(perDay[e.date]||0)+e.amt);
@@ -430,7 +454,7 @@ function saveAdd(e,kind,id){e.preventDefault();const f=e.target.elements,amt=Mat
  else{const arr=kind==="exp"?S.exp:S.co,o={amt,cat:f.cat.value,date:f.date.value,note:f.note.value.trim(),pay};
   if(id){const x=arr.find(x=>x.id===id);if(x)Object.assign(x,o);msg="Saved"}
   else{const nid=uid();if(kind==="exp")flashId=nid;arr.push(Object.assign({id:nid},kind==="co"?{re:false}:{},o));msg=kind==="exp"?`−${money(amt)} from your tank`:"Company expense added";k=kind==="exp"?"drain":"";if(okDate(o.date))month=o.date.slice(0,7)}}
- save();closeSheet();render();buzz();fx(msg,k);setTimeout(()=>{flashId=null},1700)}
+ save();closeSheet();render();buzz();if(!id)ripple(k==="drain"?"":"fill");fx(msg,k);setTimeout(()=>{flashId=null},1700)}
 // ---------- Item detail sheets
 const detail=(icon,title,amt,rows)=>`<div class="det"><span class="ic">${icon}</span><div class="dt">${esc(title)}</div><div class="big md">${amt}</div></div>`+(rows.filter(r=>r[1]).length?`<div class="kv">${rows.filter(r=>r[1]).map(([k,v])=>`<div><span>${k}</span><b>${esc(v)}</b></div>`).join("")}</div>`:"");
 function openExp(id){const e=S.exp.find(x=>x.id===id);if(!e)return;
@@ -496,7 +520,7 @@ function openPool(id,from){const p=S.pools.find(p=>p.id===id);if(!p)return;const
  <div class="acts"><button class="btn danger" onclick="delPool('${id}')">Delete pool</button></div>`);
  if(from!=null&&from!==f)requestAnimationFrame(()=>requestAnimationFrame(()=>{const el=$("#pfill");if(el)el.style.height=f*100+"%"}))}
 function pour(e,id){e.preventDefault();const p=S.pools.find(p=>p.id===id),a=Math.round((+e.target.elements.amt.value||0)*100)/100;if(!p||!(a>0))return;
- const before=sum(p.dep),was=before>=p.target-.005;p.dep.push({id:uid(),date:iso(new Date()),amt:a});save();render();openPool(id,p.target>0?Math.min(1,before/p.target):0);buzz();
+ const before=sum(p.dep),was=before>=p.target-.005;p.dep.push({id:uid(),date:iso(new Date()),amt:a});save();render();openPool(id,p.target>0?Math.min(1,before/p.target):0);buzz();ripple("fill");
  fx(!was&&sum(p.dep)>=p.target-.005?`“${p.name}” is full! Goal reached 🎉`:`+${money(a)} poured into ${p.name}`,"fill")}
 function delDep(pid,did){withUndo("Pour removed",()=>{const p=S.pools.find(p=>p.id===pid);if(p)p.dep=p.dep.filter(d=>d.id!==did)},()=>openPool(pid));openPool(pid)}
 function delPool(id){withUndo("Pool deleted",()=>{S.pools=S.pools.filter(p=>p.id!==id)})}
@@ -529,7 +553,7 @@ const SUB=["save","cards","company","progress","settings"],MONTHLY=["home","spen
 const TITLES={home:"Home",spend:"Spending",bills:"Bills",more:"More",save:"Savings",cards:"Cards & wallets",company:"Company",progress:"Progress",settings:"Settings"};
 function go(v){if(!TITLES[v])v="home";view=v;document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on",x.id==="v-"+v));
  document.querySelectorAll(".tb [data-v]").forEach(b=>{const on=b.dataset.v===v||(b.dataset.v==="more"&&SUB.includes(v));b.classList.toggle("on",on);if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
- $("#title").textContent=TITLES[v];$("#back").hidden=!SUB.includes(v);$("#mn").hidden=!MONTHLY.includes(v);
+ const T=$("#title");if(v==="home"){T.innerHTML=mark()+"<span>Clearflow</span>";T.classList.add("brand")}else{T.textContent=TITLES[v];T.classList.remove("brand")}$("#back").hidden=!SUB.includes(v);$("#mn").hidden=!MONTHLY.includes(v);
  scrollTo(0,0);enter($("#v-"+v));moveTab();try{history.replaceState(null,"","#"+v)}catch(e){}kick()}
 document.querySelectorAll(".tb [data-v]").forEach(b=>b.onclick=()=>{if(b.dataset.v!==view)go(b.dataset.v)});
 let enterT;
@@ -566,7 +590,7 @@ function renderHome(c){const g=c.g,empty=!S.exp.length&&!S.subs.length&&!S.pools
  <div class="hfoot">${S.budget?`<span class="m">Budget ${money(S.budget)}</span><button class="link" onclick="openBudget()">Edit</button>`:`<button class="btn primary" style="width:100%" onclick="openBudget()">Set a monthly budget</button>`}</div></section>
  ${alerts}
  ${S.budget||g.lv?`<div class="qp">${S.budget?`<button onclick="go('progress')">🔥 ${g.streak}-day streak</button>`:""}<button onclick="go('progress')">💧 Level ${g.lv+1} · ${g.name}</button><button onclick="go('progress')">🏅 ${g.badges.filter(b=>b.on).length}/${g.badges.length}</button></div>`:""}
- ${empty?`<div class="card welcome"><div class="em">💧</div><h2>Welcome</h2><p class="m">Tap <b>+</b> to log what you spend. It takes a few seconds, and your data stays on this phone.</p><div class="row-btns" style="justify-content:center"><button class="btn primary" onclick="openAdd('exp')">Log an expense</button><button class="btn" onclick="openAdd('sub')">Add a bill</button></div></div>`:""}
+ ${empty?`<div class="card welcome">${mark()}<h2>Welcome to Clearflow</h2><p class="tagline">See clearly where your money flows.</p><p class="m">Tap <b>+</b> to log what you spend. It takes a few seconds, and your data stays on this phone.</p><div class="row-btns" style="justify-content:center"><button class="btn primary" onclick="openAdd('exp')">Log an expense</button><button class="btn" onclick="openAdd('sub')">Add a bill</button></div></div>`:""}
  ${soon.length?`<div class="card list"><div class="lh"><h2>Coming up</h2><button class="link" onclick="go('bills')">All bills</button></div>${soon.map(x=>x.c?item({on:`openCard('${x.c.id}')`,ic:"💳",t:esc(x.c.name),s:dueTag(x.d),a:money(x.amt)}):item({on:`openSub('${x.s.id}')`,ic:ic(x.s.cat),t:esc(x.s.name),s:dueTag(x.d),a:money(x.amt)})).join("")}</div>`:""}
  ${S.pools.length?`<div class="card list"><div class="lh"><h2>Savings</h2><button class="link" onclick="go('save')">See all</button></div><div class="strip">${S.pools.map(p=>{const t=sum(p.dep),f=p.target>0?Math.min(1,t/p.target):0,full=t>=p.target-.005;
   return `<button class="pc" onclick="openPool('${p.id}')"><b>${esc(p.name)}</b><span class="pv">${Math.round(f*100)}%</span><span class="bar${full?" full":""}"><i style="width:${f*100}%"></i></span><small>${money(t)}</small></button>`}).join("")}</div></div>`:""}
@@ -608,7 +632,8 @@ function renderCompany(c){const by={};c.cx.forEach(e=>(by[e.date]=by[e.date]||[]
  <div class="card list">${ds.length?ds.map(d=>`<div class="dh"><span>${fds(d)}</span><span>${money(sum(by[d]))}</span></div>`+by[d].map(e=>item({on:`openCo('${e.id}')`,cls:e.re?"off":"",ic:ic(e.cat),t:esc(e.note||e.cat),s:e.re?'<span class="pill ok">Reimbursed</span>':meta(e.note?e.cat:"",cardName(e.pay))||"Not claimed",a:money(e.amt)})).join("")).join(""):`<div class="empty">No company expenses in ${c.mname}.</div>`}</div>
  <button class="btn ghost big" onclick="openAdd('co')">+ Add company expense</button>`}
 function renderProgress(c){const g=c.g,nx=g.nextAt?g.nextAt-g.drops:0,lp=g.nextAt?(g.drops-g.prevAt)/(g.nextAt-g.prevAt)*100:100;
- $("#v-progress").innerHTML=`<div class="card"><div class="eyebrow">Level ${g.lv+1} · ${g.drops.toLocaleString()} drops</div><div class="big md">${g.name}</div><span class="bar"><i style="width:${Math.max(2,lp)}%"></i></span><div class="m" style="margin-top:6px">${g.nextAt?`${nx.toLocaleString()} drops to ${g.nextName}`:"Top level reached"}</div></div>
+ $("#v-progress").innerHTML=`<div class="card"><div class="eyebrow">Level ${g.lv+1} · ${g.drops.toLocaleString()} drops</div><div class="big md">${g.name}</div><span class="bar"><i style="width:${Math.max(2,lp)}%"></i></span><div class="m" style="margin-top:6px">${g.nextAt?`${nx.toLocaleString()} drops to ${g.nextName}`:"Top level reached"}</div>
+ <div class="depth" role="img" aria-label="Level ${g.lv+1} of ${LV.length}: ${g.name}">${LV.map(([,n],i)=>`<div class="${i<g.lv?"":i===g.lv?"cur":"off"}"><i style="height:${12+i*8}px;opacity:${i>=g.lv?1:.35+.65*(i+1)/LV.length}"></i><small>${n}</small></div>`).join("")}</div></div>
  <div class="card"><div class="eyebrow">Flow streak ${g.todayOk?'<span class="pill ok">On pace today</span>':S.budget?'<span class="pill warn">Over pace today</span>':""}</div><div class="big md">${pl(g.streak,"day")}</div><div class="m">${S.budget?`Days you spent under ${money(g.A)}. Best: ${pl(g.best,"day")}.`:"Set a budget to start a streak."}</div></div>
  <div class="stitle">Badges · ${g.badges.filter(b=>b.on).length} of ${g.badges.length}</div>
  <div class="badges">${g.badges.map(b=>`<div class="bdg${b.on?" on":""}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C8.5 7.2 5.5 10.6 5.5 14.2a6.5 6.5 0 0 0 13 0c0-3.6-3-7-6.5-11.7Z"/></svg><span><b>${esc(b.n)}</b><small>${esc(b.d)}</small></span></div>`).join("")}</div>
