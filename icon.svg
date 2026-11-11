@@ -1,7 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<rect width="512" height="512" rx="112" fill="#2f6f5e"/>
-<rect x="104" y="150" width="304" height="212" rx="36" fill="#f6f5f1"/>
-<rect x="104" y="196" width="304" height="40" fill="#1baf7a"/>
-<rect x="140" y="282" width="96" height="22" rx="11" fill="#2a78d6"/>
-<rect x="252" y="282" width="56" height="22" rx="11" fill="#c9c6bb"/>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f6"/><stop offset="1" stop-color="#dde3e7"/></linearGradient>
+<linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1683c4"/><stop offset="1" stop-color="#0b5c84"/></linearGradient>
+<clipPath id="t"><rect x="96" y="96" width="320" height="320" rx="64"/></clipPath>
+</defs>
+<rect width="512" height="512" rx="112" fill="url(#bg)"/>
+<rect x="96" y="96" width="320" height="320" rx="64" fill="#fff"/>
+<path clip-path="url(#t)" d="M96 300C160 268 208 276 256 296S360 320 416 288V416H96Z" fill="url(#w)"/>
+<circle cx="356" cy="156" r="22" fill="#0f9f8f"/>
 </svg>
