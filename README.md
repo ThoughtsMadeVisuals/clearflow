@@ -9,7 +9,14 @@ Your monthly budget is a water tank: bills and spending drain it, and money you 
 - Works offline once opened, and installs to your home screen like an app.
 - No account, no server: all data is stored in your browser on that device only.
 - Tap **+** to log spending, a bill or a company expense in a few taps. Tap any item to edit or delete it (deletes can be undone).
-- Use **More → Settings & backup → Download backup** regularly, and **Restore** to move data to another device.
+- Use **More → Settings & backup → Download backup** regularly, and **Restore** to move data to another device. Add a password when downloading to encrypt the backup file.
+
+## Privacy and security
+- **Passcode lock (optional):** Settings → Security → Set a passcode. Your data is then encrypted on the device (AES-256-GCM, with a key derived from the passcode by PBKDF2-SHA256). The app locks after 5 minutes without use or 1 minute in the background. A forgotten passcode can't be recovered, so keep a backup.
+- **Encrypted backups:** add a password in the Download backup sheet. Restoring asks for it.
+- **Delete all data:** Settings → Security → Delete all data on this device (also on the lock screen).
+- Restored backups and imported CSVs are checked field by field before use. CSV exports escape text that spreadsheets would treat as formulas.
+- The page sets a Content Security Policy that blocks all network requests from the app. If your host supports custom headers (Netlify, Cloudflare Pages), `_headers` adds `frame-ancestors`, `nosniff` and more. Encryption needs HTTPS (or `localhost`).
 
 ## Install on your phone
 - **iPhone (Safari):** open the site → Share → Add to Home Screen.
