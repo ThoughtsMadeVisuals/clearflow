@@ -14,6 +14,8 @@ Your monthly budget is a water tank: bills and spending drain it, and money you 
 ## Home balance
 The Home balance is a flat sheet of brushed stainless steel with the water tank set into the middle. The tank drains as you spend. Tap the sheet to slide out a second steel sheet with the details: amount left, daily pace, breakdown and budget. The app remembers whether it's open.
 
+On a phone, the water in the tank stays level as you tilt the phone. It sloshes and settles, and a shake makes it splash. On iPhone, Safari asks for permission to use motion the first time you tap the sheet. Turn it off in **Settings → Water follows tilt**. It stays still when the phone is set to reduce motion.
+
 ## Privacy and security
 - **PIN lock (optional):** Settings → Security → Set a PIN. You enter a 6-digit PIN on an on-screen keypad (the phone keyboard never opens). Your data is then encrypted on the device (AES-256-GCM, with a key derived from the PIN by PBKDF2-SHA256). The app locks after 5 minutes without use or 1 minute in the background, and wrong guesses are slowed down. A forgotten PIN can't be recovered, so keep a backup.
 - **Encrypted backups:** add a password in the Download backup sheet. Restoring asks for it.
