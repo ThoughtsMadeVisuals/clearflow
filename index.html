@@ -331,6 +331,18 @@ details.more .item+.item::before{left:0}
 @media (max-height:700px){.pkeys{grid-template-columns:repeat(3,64px);gap:10px 22px}.pkeys button{width:64px;height:64px;font-size:25px}.pdots{margin:14px 0 6px}}
 @media (max-height:600px){.pkeys{grid-template-columns:repeat(3,58px);gap:8px 22px}.pkeys button{width:58px;height:58px;font-size:23px}.secf h2{margin:2px 0 6px}.secf .warnbox{margin:0 0 8px;padding:8px 12px}}
 .secf input{margin-bottom:10px}
+/* Liquid metal: when WebGL2 is available (html.lm) the steel bezels give way to the animated liquid-logo shader */
+.mark{position:relative}.mark svg{display:block;width:100%;height:100%}
+canvas.lmc{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:3}
+.mark.lm-on>svg{visibility:hidden}
+.lm .hero{border-width:0;padding:25px}
+.lm .hero::after{border-radius:inherit}
+.lm .orb{border-width:0;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.lm .tb .fab{border-width:0}
+.cc>canvas.lmc{position:absolute;z-index:2}
+.lm .welcome .mark{width:84px;height:84px}
+.lm .lockscr .mark{width:96px;height:96px}
+.lm #title.brand .mark{width:32px;height:32px}
 .secf .warnbox{background:var(--warns);color:var(--tx);border-radius:14px;padding:10px 12px;font-size:13.5px;margin:4px 0 14px;text-align:left}
 </style></head><body>
 <header class="top"><div class="ti">
@@ -354,7 +366,7 @@ details.more .item+.item::before{left:0}
  <span class="tbi" id="tbi" aria-hidden="true"></span>
  <button data-v="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 4l8.5 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-4v-6H9v6H5A1.5 1.5 0 0 1 3.5 19z"/></svg>Home</button>
  <button data-v="spend"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3"/></svg>Spending</button>
- <button class="fab" onclick="openAdd('exp')" aria-label="Add expense"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+ <button class="fab" data-lm="frame" data-lmt="4" onclick="openAdd('exp')" aria-label="Add expense"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
  <button data-v="bills"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Bills</button>
  <button data-v="more"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.8"/></svg>More</button>
 </div></nav>
@@ -445,7 +457,7 @@ const savedIn=mk=>S.pools.reduce((a,p)=>a+p.dep.filter(d=>d.date.startsWith(mk))
 const LV=[[0,"Puddle"],[100,"Pond"],[300,"Stream"],[700,"River"],[1500,"Lake"],[3000,"Sea"],[6000,"Ocean"]];
 let lastLv=null;
 let markN=0;
-function mark(){const n=++markN;return `<svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="mkb${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="mk-bg1"/><stop offset="1" class="mk-bg2"/></linearGradient><linearGradient id="mkw${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="mk-w1"/><stop offset="1" class="mk-w2"/></linearGradient><clipPath id="mkc${n}"><rect x="96" y="96" width="320" height="320" rx="64"/></clipPath></defs><rect width="512" height="512" rx="112" fill="url(#mkb${n})"/><rect class="mk-tile" x="96" y="96" width="320" height="320" rx="64"/><path clip-path="url(#mkc${n})" d="M96 300C160 268 208 276 256 296S360 320 416 288V416H96Z" fill="url(#mkw${n})"/><circle class="mk-sun" cx="356" cy="156" r="22"/></svg>`}
+function mark(){const n=++markN;return `<span class="mark" data-lm="mark" aria-hidden="true"><svg viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="mkb${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="mk-bg1"/><stop offset="1" class="mk-bg2"/></linearGradient><linearGradient id="mkw${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="mk-w1"/><stop offset="1" class="mk-w2"/></linearGradient><clipPath id="mkc${n}"><rect x="96" y="96" width="320" height="320" rx="64"/></clipPath></defs><rect width="512" height="512" rx="112" fill="url(#mkb${n})"/><rect class="mk-tile" x="96" y="96" width="320" height="320" rx="64"/><path clip-path="url(#mkc${n})" d="M96 300C160 268 208 276 256 296S360 320 416 288V416H96Z" fill="url(#mkw${n})"/><circle class="mk-sun" cx="356" cy="156" r="22"/></svg></span>`}
 function ripple(kind){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;const f=document.querySelector(".tb .fab");if(!f)return;const r=f.getBoundingClientRect();
  for(const c of ["","r2"]){const d=document.createElement("div");d.className="ripple "+c+" "+(kind||"");d.style.left=(r.left+r.width/2)+"px";d.style.top=(r.top+r.height/2)+"px";document.body.appendChild(d);setTimeout(()=>d.remove(),1200)}}catch(e){}}
 function game(){const tdy=new Date();tdy.setHours(0,0,0,0);const tk=iso(tdy);
@@ -606,9 +618,155 @@ function loop(now){raf=0;if(lvNow==null)return;const t=RM.matches?0:(now-T0)/100
  if(RM.matches){lvNow=lvTo;splash=0}else{lvNow+=(lvTo-lvNow)*.07;splash*=.965}
  const cs=[...document.querySelectorAll("canvas.wv")].filter(c=>c.offsetParent);cs.forEach(c=>drawTank(c,lvNow,t));
  if(RM.matches||document.hidden||!cs.length)return;raf=requestAnimationFrame(loop)}
-function kick(){if(!raf)raf=requestAnimationFrame(loop)}
+function kick(){if(!raf)raf=requestAnimationFrame(loop);if(typeof LM!=="undefined")LM.kick()}
 document.addEventListener("visibilitychange",kick);addEventListener("resize",kick);
 try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",kick);RM.addEventListener("change",kick)}catch(e){}
+// ---------- Liquid metal: the paper-design/liquid-logo shader (WebGL2), shared by every metal surface.
+// One offscreen GL canvas renders each [data-lm] element in turn and copies the result into a 2D canvas inside it.
+// data-lm="mark" is the Clearflow mark (bevel from a Poisson solve, like liquid-logo); data-lm="frame" is a rim
+// of data-lmt CSS px following the element's border radius (bevel computed analytically). Without WebGL2 the CSS steel stays.
+const LM=(()=>{
+ const VS=`#version 300 es
+in vec2 a_position;out vec2 vUv;void main(){vUv=.5*(a_position+1.);gl_Position=vec4(a_position,0.,1.);}`;
+ const FS=`#version 300 es
+precision highp float;
+in vec2 vUv;out vec4 fragColor;
+uniform sampler2D u_image_texture;
+uniform float u_time,u_ratio,u_img_ratio,u_patternScale,u_refraction,u_edge,u_patternBlur,u_liquid,u_fade,u_zoom;
+#define PI 3.14159265358979323846
+vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}
+vec2 mod289(vec2 x){return x-floor(x*(1./289.))*289.;}
+vec3 permute(vec3 x){return mod289(((x*34.)+1.)*x);}
+float snoise(vec2 v){const vec4 C=vec4(.211324865405187,.366025403784439,-.577350269189626,.024390243902439);
+ vec2 i=floor(v+dot(v,C.yy));vec2 x0=v-i+dot(i,C.xx);vec2 i1=(x0.x>x0.y)?vec2(1.,0.):vec2(0.,1.);vec4 x12=x0.xyxy+C.xxzz;x12.xy-=i1;i=mod289(i);
+ vec3 p=permute(permute(i.y+vec3(0.,i1.y,1.))+i.x+vec3(0.,i1.x,1.));vec3 m=max(.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.);m=m*m;m=m*m;
+ vec3 x=2.*fract(p*C.www)-1.;vec3 h=abs(x)-.5;vec3 ox=floor(x+.5);vec3 a0=x-ox;m*=1.79284291400159-.85373472095314*(a0*a0+h*h);
+ vec3 g;g.x=a0.x*x0.x+h.x*x0.y;g.yz=a0.yz*x12.xz+h.yz*x12.yw;return 130.*dot(m,g);}
+vec2 get_img_uv(){vec2 u=vUv-.5;if(u_ratio>u_img_ratio)u.x=u.x*u_ratio/u_img_ratio;else u.y=u.y*u_img_ratio/u_ratio;u+=.5;u.y=1.-u.y;return u;}
+vec2 rotate(vec2 uv,float th){return mat2(cos(th),sin(th),-sin(th),cos(th))*uv;}
+float get_color_channel(float c1,float c2,float stripe_p,vec3 w,float extra_blur,float b){
+ float ch=c2;float border=0.;float blur=u_patternBlur+extra_blur;
+ ch=mix(ch,c1,smoothstep(.0,blur,stripe_p));
+ border=w[0];ch=mix(ch,c2,smoothstep(border-blur,border+blur,stripe_p));
+ b=smoothstep(.2,.8,b);border=w[0]+.4*(1.-b)*w[1];ch=mix(ch,c1,smoothstep(border-blur,border+blur,stripe_p));
+ border=w[0]+.5*(1.-b)*w[1];ch=mix(ch,c2,smoothstep(border-blur,border+blur,stripe_p));
+ border=w[0]+w[1];ch=mix(ch,c1,smoothstep(border-blur,border+blur,stripe_p));
+ float gradient_t=(stripe_p-w[0]-w[1])/w[2];float gradient=mix(c1,c2,smoothstep(0.,1.,gradient_t));
+ ch=mix(ch,gradient,smoothstep(border-blur,border+blur,stripe_p));return ch;}
+float get_img_frame_alpha(vec2 uv,float f){return smoothstep(0.,f,uv.x)*smoothstep(1.,1.-f,uv.x)*smoothstep(0.,f,uv.y)*smoothstep(1.,1.-f,uv.y);}
+void main(){
+ vec2 img_uv=get_img_uv();vec4 img=texture(u_image_texture,img_uv);
+ if(img.r>.995){fragColor=vec4(0.);return;}
+ vec2 uv=vUv-.5;uv.y=-uv.y;uv*=vec2(u_ratio,1.)/max(u_ratio,1.)*u_zoom;uv+=.5;
+ float diagonal=uv.x-uv.y;float t=.001*u_time;
+ vec3 color1=vec3(.98,.98,1.);vec3 color2=vec3(.1,.1,.1+.1*smoothstep(.7,1.3,uv.x+uv.y));
+ float edge=img.r;
+ vec2 grad_uv=uv-.5;float dist=length(grad_uv+vec2(0.,.2*diagonal));grad_uv=rotate(grad_uv,(.25-.2*diagonal)*PI);
+ float bulge=pow(1.8*dist,1.2);bulge=1.-bulge;bulge*=pow(uv.y,.3);
+ float cycle_width=u_patternScale;
+ float thin_strip_1_ratio=.12/cycle_width*(1.-.4*bulge);float thin_strip_2_ratio=.07/cycle_width*(1.+.4*bulge);
+ float wide_strip_ratio=(1.-thin_strip_1_ratio-thin_strip_2_ratio);
+ float thin_strip_1_width=cycle_width*thin_strip_1_ratio;float thin_strip_2_width=cycle_width*thin_strip_2_ratio;
+ float opacity=1.-smoothstep(.9-.5*u_edge,1.-.5*u_edge,edge);
+ if(u_fade>0.)opacity*=get_img_frame_alpha(img_uv,u_fade);
+ float noise=snoise(uv-t);
+ edge+=(1.-edge)*u_liquid*noise;
+ float refr=clamp(1.-bulge,0.,1.);
+ float dir=grad_uv.x;dir+=diagonal;
+ dir-=2.*noise*diagonal*(smoothstep(0.,1.,edge)*smoothstep(1.,0.,edge));
+ bulge*=clamp(pow(uv.y,.1),.3,1.);dir*=(.1+(1.1-edge)*bulge);dir*=smoothstep(1.,.7,edge);
+ dir+=.18*(smoothstep(.1,.2,uv.y)*smoothstep(.4,.2,uv.y));dir+=.03*(smoothstep(.1,.2,1.-uv.y)*smoothstep(.4,.2,1.-uv.y));
+ dir*=(.5+.5*pow(uv.y,2.));dir*=cycle_width;dir-=t;
+ float refr_r=refr;refr_r+=.03*bulge*noise;float refr_b=1.3*refr;
+ refr_r+=5.*(smoothstep(-.1,.2,uv.y)*smoothstep(.5,.1,uv.y))*(smoothstep(.4,.6,bulge)*smoothstep(1.,.4,bulge));refr_r-=diagonal;
+ refr_b+=(smoothstep(0.,.4,uv.y)*smoothstep(.8,.1,uv.y))*(smoothstep(.4,.6,bulge)*smoothstep(.8,.4,bulge));refr_b-=.2*edge;
+ refr_r*=u_refraction;refr_b*=u_refraction;
+ vec3 w=vec3(thin_strip_1_width,thin_strip_2_width,wide_strip_ratio);w[1]-=.02*smoothstep(.0,1.,edge+bulge);
+ float r=get_color_channel(color1.r,color2.r,mod(dir+refr_r,1.),w,.02+.03*u_refraction*bulge,bulge);
+ float g=get_color_channel(color1.g,color2.g,mod(dir,1.),w,.01/(1.-diagonal),bulge);
+ float b=get_color_channel(color1.b,color2.b,mod(dir-refr_b,1.),w,.01,bulge);
+ fragColor=vec4(vec3(r,g,b)*opacity,opacity);}`;
+ // liquid-logo defaults; rims use a lower edge so thin bands keep their full width
+ const PRM={mark:{patternScale:2,refraction:.015,edge:.4,patternBlur:.005,liquid:.07,fade:.01,zoom:1},
+  frame:{patternScale:2,refraction:.015,edge:.05,patternBlur:.005,liquid:.07,fade:0,zoom:.8}};
+ const SPEED=.3,FRAME_MS=32;
+ let gl=null,cv=null,U={},ok=false,mode="on",raf=0,last=0,tAcc=0,els=new WeakMap();
+ const tex=new Map();
+ try{const m=localStorage.getItem("trk-lm");if(m==="still"||m==="off")mode=m}catch(e){}
+ function start(){
+  try{cv=document.createElement("canvas");cv.width=cv.height=256;
+   gl=cv.getContext("webgl2",{alpha:true,premultipliedAlpha:true,antialias:false,depth:false,stencil:false,preserveDrawingBuffer:false,powerPreference:"low-power"})}catch(e){gl=null}
+  if(!gl)return false;
+  const sh=(src,type)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return gl.getShaderParameter(s,gl.COMPILE_STATUS)?s:null};
+  const v=sh(VS,gl.VERTEX_SHADER),f=sh(FS,gl.FRAGMENT_SHADER);if(!v||!f)return false;
+  const p=gl.createProgram();gl.attachShader(p,v);gl.attachShader(p,f);gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))return false;
+  gl.useProgram(p);
+  for(let i=0,n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);i<n;i++){const nm=gl.getActiveUniform(p,i).name;U[nm]=gl.getUniformLocation(p,nm)}
+  const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(p,"a_position");gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  gl.activeTexture(gl.TEXTURE0);gl.uniform1i(U.u_image_texture,0);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
+  cv.addEventListener("webglcontextlost",e=>{e.preventDefault();ok=false;clear()});
+  return true}
+ // Upload a one-channel mask: 0 = deepest inside the shape, 255 = edge/outside (same convention as liquid-logo)
+ function upload(data,w,h){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,w,h,0,gl.RED,gl.UNSIGNED_BYTE,data);return t}
+ // The mark: rounded frame + wave + sun, beveled by liquid-logo's Poisson solve
+ // The mark, redrawn as even-width strokes (rounded tile, wave, sun) and beveled by liquid-logo's Poisson solve
+ function markMask(){const S=256,c=document.createElement("canvas");c.width=c.height=S;const x=c.getContext("2d");x.scale(S/512,S/512);
+  x.strokeStyle=x.fillStyle="#000";x.lineCap="round";x.lineJoin="round";x.lineWidth=58;
+  x.beginPath();x.moveTo(140,64);x.arcTo(448,64,448,448,96);x.arcTo(448,448,64,448,96);x.arcTo(64,448,64,64,96);x.arcTo(64,64,448,64,96);x.closePath();x.stroke();
+  x.lineWidth=54;x.beginPath();x.moveTo(70,318);x.bezierCurveTo(150,252,206,268,256,300);x.bezierCurveTo(306,332,366,344,442,276);x.stroke();
+  x.beginPath();x.arc(334,178,40,0,7);x.fill();
+  const px=x.getImageData(0,0,S,S).data,N=S*S,inn=new Uint8Array(N),bd=new Uint8Array(N);
+  for(let i=0;i<N;i++)inn[i]=px[i*4+3]>127?1:0;
+  for(let y=0;y<S;y++)for(let X=0;X<S;X++){const i=y*S+X;if(!inn[i])continue;
+   if(X===0||y===0||X===S-1||y===S-1||!inn[i-1]||!inn[i+1]||!inn[i-S]||!inn[i+S]||!inn[i-S-1]||!inn[i-S+1]||!inn[i+S-1]||!inn[i+S+1])bd[i]=1}
+  let u=new Float32Array(N),nu=new Float32Array(N);
+  for(let it=0;it<300;it++){for(let y=1;y<S-1;y++)for(let X=1;X<S-1;X++){const i=y*S+X;nu[i]=inn[i]&&!bd[i]?(.01+u[i+1]+u[i-1]+u[i+S]+u[i-S])/4:0}const t=u;u=nu;nu=t}
+  let mx=0;for(let i=0;i<N;i++)if(u[i]>mx)mx=u[i];
+  const out=new Uint8Array(N);for(let i=0;i<N;i++){const r=mx?u[i]/mx:0;out[i]=inn[i]?Math.round(255*(1-r*r)):255}
+  return upload(out,S,S)}
+ // A rim of thickness t (device px) around a w×h rounded rect of radius r: parabolic bevel across the band
+ function frameMask(w,h,r,t){const d=new Uint8Array(w*h),ri=Math.max(0,r-t),hw=w/2,hh=h/2;
+  const sd=(x,y,bx,by,R)=>{const qx=Math.abs(x)-bx+R,qy=Math.abs(y)-by+R;return Math.min(Math.max(qx,qy),0)+Math.hypot(Math.max(qx,0),Math.max(qy,0))-R};
+  for(let y=0;y<h;y++){const py=y+.5-hh;for(let x=0;x<w;x++){const pxx=x+.5-hw,a=-sd(pxx,py,hw,hh,r);let v=255;
+   if(a>0){const b=sd(pxx,py,hw-t,hh-t,ri);if(b>0){const q=Math.min(1,4*a*b/(t*t));v=Math.round(255*(1-q*q))}}d[y*w+x]=v}}
+  return upload(d,w,h)}
+ function getTex(key,make){let e=tex.get(key);if(e){tex.delete(key);tex.set(key,e);return e}
+  e=make();tex.set(key,e);if(tex.size>24){const k=tex.keys().next().value;gl.deleteTexture(tex.get(k));tex.delete(k)}return e}
+ function paint(el,t){const type=el.dataset.lm==="mark"?"mark":"frame",dpr=Math.min(2,devicePixelRatio||1);
+  const W=Math.round(el.offsetWidth*dpr),H=Math.round(el.offsetHeight*dpr);if(W<4||H<4)return;
+  let st=els.get(el);if(!st||!st.c.isConnected){const c=document.createElement("canvas");c.className="lmc";c.setAttribute("aria-hidden","true");el.appendChild(c);st={c,x:c.getContext("2d")};els.set(el,st)}
+  let key="mark";
+  if(type==="frame"){const cs=getComputedStyle(el).borderTopLeftRadius,rp=parseFloat(cs)||0,R=Math.min(W,H)/2,r=Math.min(R,/%$/.test(cs)?rp/100*Math.min(W,H):rp*dpr),th=(parseFloat(el.dataset.lmt)||4)*dpr;
+   key=`f${W}x${H}r${Math.round(r)}t${th}`;st.tex=getTex(key,()=>frameMask(W,H,r,th))}else st.tex=getTex(key,markMask);
+  if(st.c.width!==W||st.c.height!==H){st.c.width=W;st.c.height=H}
+  if(cv.width<W||cv.height<H){cv.width=Math.max(cv.width,W);cv.height=Math.max(cv.height,H)}
+  const P=PRM[type];gl.viewport(0,cv.height-H,W,H);gl.bindTexture(gl.TEXTURE_2D,st.tex);
+  gl.uniform1f(U.u_time,t);gl.uniform1f(U.u_ratio,W/H);gl.uniform1f(U.u_img_ratio,type==="mark"?1:W/H);
+  gl.uniform1f(U.u_patternScale,P.patternScale);gl.uniform1f(U.u_refraction,P.refraction);gl.uniform1f(U.u_edge,P.edge);
+  gl.uniform1f(U.u_patternBlur,P.patternBlur);gl.uniform1f(U.u_liquid,P.liquid);gl.uniform1f(U.u_fade,P.fade);gl.uniform1f(U.u_zoom,P.zoom);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  st.x.clearRect(0,0,W,H);st.x.drawImage(cv,0,0,W,H,0,0,W,H);st.key=key;st.done=1;el.classList.add("lm-on")}
+ function frame(now){raf=0;if(!ok||mode==="off")return;const still=mode==="still"||RM.matches;
+  if(!still&&last&&now-last<FRAME_MS){raf=requestAnimationFrame(frame);return}
+  if(!still)tAcc+=Math.min(100,last?now-last:0)*SPEED;last=now;
+  let live=false;
+  for(const el of document.querySelectorAll("[data-lm]")){if(!el.getClientRects().length)continue;const r=el.getBoundingClientRect();
+   if(r.bottom<0||r.top>innerHeight||r.right<0||r.left>innerWidth)continue;live=true;
+   const st=els.get(el);if(still&&st&&st.done&&st.c.isConnected&&st.c.width===Math.round(el.offsetWidth*Math.min(2,devicePixelRatio||1)))continue;
+   try{paint(el,tAcc)}catch(e){}}
+  if(still||document.hidden||!live){last=0;return}raf=requestAnimationFrame(frame)}
+ function kick(){if(ok&&mode!=="off"&&!raf)raf=requestAnimationFrame(frame)}
+ function clear(){document.documentElement.classList.remove("lm");document.querySelectorAll("canvas.lmc").forEach(c=>c.remove());
+  document.querySelectorAll(".lm-on").forEach(e=>e.classList.remove("lm-on"));els=new WeakMap()}
+ function apply(){if(ok&&mode!=="off"){document.documentElement.classList.add("lm");els=new WeakMap();document.querySelectorAll("canvas.lmc").forEach(c=>c.remove());kick()}else clear()}
+ function set(m){mode=m;try{if(m==="on")localStorage.removeItem("trk-lm");else localStorage.setItem("trk-lm",m)}catch(e){}apply()}
+ ok=start();apply();
+ addEventListener("scroll",kick,{passive:true});addEventListener("resize",kick);document.addEventListener("visibilitychange",kick);
+ return{kick,set,get mode(){return mode},get ok(){return ok}}})();
 let heroPrev=null;
 function countUp(el,to){const from=heroPrev==null?to:heroPrev;heroPrev=to;const f=v=>(v<-.004?"−":"")+money(Math.abs(v));
  if(RM.matches||Math.abs(from-to)<.005){el.textContent=f(to);return}const t0=performance.now();
@@ -649,9 +807,9 @@ function renderHome(c){const g=c.g,empty=!S.exp.length&&!S.subs.length&&!S.pools
  const lg=[[c.commit,"f1","Bills"],[c.spent,"f2","Spending"],[c.saved,"f3","Saved"]].filter(x=>x[0]>0);
  const alerts=c.cdue.filter(x=>days(x.k.D)<=7).map(x=>{const n=days(x.k.D);return `<button class="alert${n<0?" warn":""}" onclick="openCard('${x.c.id}')"><span class="ic" style="background:var(--card)">💳</span><span class="tx"><b>${esc(x.c.name)} · ${money(x.k.due)}</b><small>${n<0?"Overdue since "+fd(x.k.D):"Card payment due "+when(x.k.D)}</small></span><span class="chev">›</span></button>`}).join("");
  const soon=c.up.filter(x=>days(x.d)<=14).slice(0,3),rec=[...c.ex].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
- const h=`<section class="card hero${c.over?" dry":c.low?" low":""}"><div class="hrow"><div class="hl">
+ const h=`<section class="card hero${c.over?" dry":c.low?" low":""}" data-lm="frame" data-lmt="7"><div class="hrow"><div class="hl">
  <div class="eyebrow">${S.budget?(c.over?"Over budget":"Left to spend"):"Spent in "+c.mname}</div><div class="big${c.over?" neg":""}" id="heroNum"></div><div class="sub">${sub}</div></div>
- ${S.budget?`<div class="orb" role="img" aria-label="${c.over?"Budget used up":Math.round(c.fr*100)+"% of budget left"}"><canvas class="wv"></canvas><span>${c.over?"0%":Math.round(c.fr*100)+"%"}</span></div>`:""}</div>
+ ${S.budget?`<div class="orb" data-lm="frame" data-lmt="7" role="img" aria-label="${c.over?"Budget used up":Math.round(c.fr*100)+"% of budget left"}"><canvas class="wv"></canvas><span>${c.over?"0%":Math.round(c.fr*100)+"%"}</span></div>`:""}</div>
  ${lg.length?`<div class="flow" aria-hidden="true">${seg(c.commit,"f1")}${seg(c.spent,"f2")}${seg(c.saved,"f3")}</div><div class="lg">${lg.map(([v,k,n])=>`<span><i class="${k}"></i>${n}<b>${money(v)}</b></span>`).join("")}</div>`:""}
  <div class="hfoot">${S.budget?`<span class="m">Budget ${money(S.budget)}</span><button class="link" onclick="openBudget()">Edit</button>`:`<button class="btn primary" style="width:100%" onclick="openBudget()">Set a monthly budget</button>`}</div></section>
  ${alerts}
@@ -686,7 +844,7 @@ function renderSave(c){
  <button class="btn ghost big" onclick="openPoolForm()">+ New savings pool</button>`}
 function renderCards(c){const free=WQ.filter(n=>!S.wallets.some(w=>w.name.toLowerCase()===n.toLowerCase())),ex=S.exp.filter(e=>e.date.startsWith(iso(new Date()).slice(0,7)));
  $("#v-cards").innerHTML=(c.ci.length?c.ci.map(({c:cd,k},i)=>{const bal=k.nt+(k.paid?0:k.lt),late=k.due&&days(k.D)<0;
-  return `<button class="cc c${i%4}" onclick="openCard('${cd.id}')"><span class="n"><span>${esc(cd.name)}</span><span>›</span></span><span><span class="s">${k.due?(late?"Overdue":"Due "+when(k.D)):"Owed this cycle"}</span><div class="v">${money(k.due||bal)}</div>${cd.lim>0?`<span class="bar"><i style="width:${Math.min(100,bal/cd.lim*100)}%"></i></span>`:""}</span></button>`}).join("")
+  return `<button class="cc c${i%4}" data-lm="frame" data-lmt="3.5" onclick="openCard('${cd.id}')"><span class="n"><span>${esc(cd.name)}</span><span>›</span></span><span><span class="s">${k.due?(late?"Overdue":"Due "+when(k.D)):"Owed this cycle"}</span><div class="v">${money(k.due||bal)}</div>${cd.lim>0?`<span class="bar"><i style="width:${Math.min(100,bal/cd.lim*100)}%"></i></span>`:""}</span></button>`}).join("")
   :`<div class="card empty">Add a credit card to see what you owe and when it's due.</div>`)
  +`<button class="btn ghost big" onclick="openCardForm()">+ Add a credit card</button>
  <div class="stitle">E-wallets</div><div class="card list">${S.wallets.length?S.wallets.map(w=>item({on:`openWallet('${w.id}')`,ic:"📱",t:esc(w.name),a:money(sum(ex.filter(e=>e.pay===w.id))),a2:"this month"})).join(""):'<div class="empty">No e-wallets yet.</div>'}
@@ -724,13 +882,16 @@ function renderSettings(){const th=document.documentElement.dataset.theme||"auto
  $("#v-settings").innerHTML=`<div class="card list">
  <label class="set"><span>Monthly budget</span><input type="number" inputmode="decimal" min="0" step="1" placeholder="Not set" value="${S.budget||""}" onchange="setBudget(this.value)"></label>
  <label class="set"><span>Currency</span><input maxlength="4" value="${esc(S.cur)}" onchange="S.cur=cleanCur(this.value);save();render()"></label>
- <div class="set"><span>Theme</span>${segHTML([["auto","Auto"],["light","Light"],["dark","Dark"]],th,themePrev==null?-1:themePrev,k=>`setTheme('${k}',event)`,"Theme")}</div></div>
+ <div class="set"><span>Theme</span>${segHTML([["auto","Auto"],["light","Light"],["dark","Dark"]],th,themePrev==null?-1:themePrev,k=>`setTheme('${k}',event)`,"Theme")}</div>
+ ${LM.ok?`<div class="set"><span>Liquid metal</span>${segHTML([["on","Flowing"],["still","Still"],["off","Off"]],LM.mode,lmPrev==null?-1:lmPrev,k=>`setLM('${k}')`,"Liquid metal")}</div>`:""}</div>
  <div class="stitle">Backup</div><div class="card"><p class="m" style="margin:0 0 12px">Your data is stored only on this device. Download a backup now and then, and use it to move to another phone.</p>
  <div class="row-btns" style="margin:0"><button class="btn primary" onclick="backup()">Download backup</button><label class="btn">Restore<input type="file" accept=".json,application/json" onchange="restore(this)"></label></div></div>
  ${secHTML()}
  <details class="card more" style="padding:4px 16px"><summary>Spreadsheet sync (CSV)</summary><p class="m" style="margin:0 0 12px">Export CSVs that match the Google Sheet tabs, or import rows from them. Imports add new rows and skip duplicates.</p>
  <div class="row-btns" style="margin:0 0 12px"><button class="btn" onclick="exp('subs')">Export bills</button><button class="btn" onclick="exp('exp')">Export spending</button><button class="btn" onclick="expCo()">Export company</button><label class="btn">Import CSV<input type="file" accept=".csv,.tsv,.txt" multiple onchange="imp(this.files);this.value=''"></label></div></details>
- <p class="m" style="text-align:center" id="st">${esc(stMsg)}</p>`;themePrev=null;slideSegs($("#v-settings"))}
+ <p class="m" style="text-align:center" id="st">${esc(stMsg)}</p>`;themePrev=null;lmPrev=null;slideSegs($("#v-settings"))}
+let lmPrev=null;
+function setLM(m){buzz();lmPrev=["on","still","off"].indexOf(LM.mode);LM.set(m);renderSettings()}
 function render(){const c=ctx();
  $("#ml").textContent=new Date(c.y,c.m-1,1).toLocaleDateString(undefined,{month:"short",year:"numeric"});
  setTank(c.fr,c.over?"dry":c.low?"low":"ok");
@@ -894,7 +1055,7 @@ async function pinOff(){try{await LOCK.pending.catch(()=>{});saveSeq++;LOCK.key=
 // ---------- Delete everything Clearflow stored on this device
 async function wipeAll(){if(!confirm("Delete ALL Clearflow data on this device?\n\nBills, spending, cards, savings and settings will be erased. This can't be undone, so download a backup first if you want to keep it."))return;
  saveSeq++;LOCK.key=null;
- try{["trk",ENC_KEY,"trk-theme"].forEach(k=>localStorage.removeItem(k));sessionStorage.clear()}catch(e){}
+ try{["trk",ENC_KEY,"trk-theme","trk-lm"].forEach(k=>localStorage.removeItem(k));sessionStorage.clear()}catch(e){}
  try{if(window.caches)await Promise.all((await caches.keys()).map(k=>caches.delete(k)))}catch(e){}
  try{if(navigator.serviceWorker)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(r=>r.unregister()))}catch(e){}
  location.replace(location.pathname)}
