@@ -94,7 +94,6 @@ body.lock .ti{transform:scale(.94);opacity:.6}
 .eyebrow{font-size:13px;font-weight:600;color:var(--mut);letter-spacing:.005em}
 .big{font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1.08;margin:4px 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .big.md{font-size:32px}
-.hero .big{font-size:clamp(26px,8.6vw,40px);white-space:nowrap}
 .big.neg{color:var(--warn)}
 .m{color:var(--mut);font-size:13.5px}
 .empty{padding:22px 16px;text-align:center;color:var(--mut);font-size:14px}
@@ -119,15 +118,12 @@ body.lock .ti{transform:scale(.94);opacity:.6}
 .bar{display:block;height:6px;background:var(--soft);border-radius:99px;overflow:hidden;margin-top:8px;box-shadow:inset 0 1px 1px rgba(0,0,0,.08)}
 .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac2),var(--ac));border-radius:99px;transition:width .8s var(--ease-out)}
 .bar.over i{background:var(--warn)}.bar.full i{background:linear-gradient(90deg,var(--ac2),var(--save))}
-/* Hero: a glass display set in a brushed-steel bezel */
-.hero{position:relative;overflow:hidden;padding:20px;border:5px solid transparent;border-radius:28px;background:var(--disp) padding-box,var(--steel) border-box;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 1px 0 var(--gline),0 1px 0 rgba(255,255,255,.4),var(--gshadow)}
-.hero::after{content:"";position:absolute;inset:0;border-radius:23px;pointer-events:none;background:linear-gradient(160deg,rgba(255,255,255,.28),rgba(255,255,255,0) 34%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),inset 0 2px 10px rgba(0,0,0,.06)}
 .hrow{display:flex;gap:14px;align-items:center}
 .hl{flex:1;min-width:0}
 .sub{font-size:14px;color:var(--mut)}.sub b{color:var(--tx)}
 .orb{position:relative;width:102px;height:102px;border-radius:50%;flex:none;border:5px solid transparent;background:linear-gradient(var(--well),var(--well)) padding-box,var(--steel) border-box;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.14);transition:box-shadow .4s ease}
 .orb::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;background:radial-gradient(70% 55% at 30% 18%,rgba(255,255,255,.55),rgba(255,255,255,0) 60%);box-shadow:inset 0 3px 8px rgba(0,0,0,.22)}
-.hero.low .orb{box-shadow:0 0 0 3px var(--ambers),0 3px 10px rgba(0,0,0,.14)}.hero.dry .orb{box-shadow:0 0 0 3px var(--warns),0 3px 10px rgba(0,0,0,.14)}
+
 .orb canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .orb span{position:absolute;inset:0;z-index:1;display:grid;place-items:center;font:700 18px var(--fd);letter-spacing:-.02em;text-shadow:0 0 8px var(--bg),0 0 2px var(--bg)}
 @media(max-width:380px){.orb{width:86px;height:86px}}
@@ -138,6 +134,32 @@ body.lock .ti{transform:scale(.94);opacity:.6}
 .lg i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
 .lg b{color:var(--tx);font-weight:600;margin-left:2px;font-variant-numeric:tabular-nums}
 .hfoot{position:relative;z-index:1;margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+/* Hero: a sheet of (liquid) metal with the water orb set into it; a second sheet with the details slides out from under it */
+.hero2{position:relative;margin-bottom:12px}
+.plate{position:relative;display:block;width:100%;border:0;padding:0;border-radius:30px;color:var(--tx);text-align:left;background:var(--steel);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(0,0,0,.18),var(--gshadow)}
+.lm .plate.lm-on{background:none;box-shadow:0 1px 1px rgba(0,0,0,.06),0 14px 34px rgba(15,25,35,.2)}
+.plate>canvas.lmc{z-index:0}
+.plate>:not(canvas){position:relative;z-index:1}
+.plate.main{height:244px;padding-bottom:20px;display:flex;align-items:center;justify-content:center;z-index:2;transition:transform .25s var(--ease-out)}
+.plate.main:active{transform:scale(.985)}
+.orb.xl{width:176px;height:176px;border-width:7px;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.orb.xl span{font-size:42px;letter-spacing:-.035em;color:#fff;text-shadow:0 1px 2px rgba(0,30,50,.45),0 0 18px rgba(0,40,70,.35)}
+.orb.xl span.nb{font-size:16px;color:var(--mut);text-shadow:none}
+.lm .orb.xl{box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.orb.xl span.lo{color:var(--tx);text-shadow:0 0 10px var(--well),0 0 2px var(--well)}.orb.xl span.ov{color:var(--warn);text-shadow:none}
+.hero2.low .orb.xl{box-shadow:0 0 0 4px color-mix(in srgb,var(--amber) 55%,transparent)}.hero2.dry .orb.xl{box-shadow:0 0 0 4px color-mix(in srgb,var(--warn) 60%,transparent)}
+.grip{position:absolute!important;left:50%;bottom:8px;width:30px;height:15px;margin-left:-15px;display:grid;place-items:center;transition:transform .55s var(--ease-drawer)}
+.grip svg{width:24px;height:12px;fill:none;stroke:rgba(10,14,18,.5);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 0 rgba(255,255,255,.7))}
+.plate.main.open .grip{transform:rotate(180deg)}
+.detw{display:grid;grid-template-rows:0fr;transition:grid-template-rows .6s var(--ease-drawer),margin-bottom .6s var(--ease-drawer)}
+.detw.open{grid-template-rows:1fr;margin-bottom:-18px}
+.detin{min-height:0;overflow:hidden;margin:0 -16px;padding:0 16px}
+.detp{padding:10px 0 30px;transform:translateY(-70%) scale(.96);opacity:0;transform-origin:50% 0;transition:transform .6s var(--ease-drawer),opacity .35s ease}
+.detw.open .detp{transform:none;opacity:1}
+.plate.dsheet{padding:12px;border-radius:30px}
+.lm .plate.dsheet.lm-on{box-shadow:0 1px 1px rgba(0,0,0,.06),0 8px 20px rgba(15,25,35,.16)}
+.win{border-radius:20px;padding:16px 18px;background:var(--disp);box-shadow:inset 0 2px 8px rgba(0,0,0,.16),inset 0 0 0 1px rgba(0,0,0,.06)}
+.win .big{font-size:clamp(28px,9vw,40px);white-space:nowrap}
 /* Quick pills */
 .qp{display:flex;gap:8px;margin:0 -16px 12px;padding:2px 16px 4px;overflow-x:auto;scrollbar-width:none}.qp::-webkit-scrollbar{display:none}
 .qp button{flex:none;border:0;border-radius:999px;padding:8px 14px;font-weight:600;font-size:13.5px;transition:transform .16s var(--ease-out)}
@@ -335,8 +357,6 @@ details.more .item+.item::before{left:0}
 .mark{position:relative}.mark svg{display:block;width:100%;height:100%}
 canvas.lmc{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:3}
 .mark.lm-on>svg{visibility:hidden}
-.lm .hero{border-width:0;padding:25px}
-.lm .hero::after{border-radius:inherit}
 .lm .orb{border-width:0;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .lm .tb .fab{border-width:0}
 .cc>canvas.lmc{position:absolute;z-index:2}
@@ -688,7 +708,8 @@ void main(){
  fragColor=vec4(vec3(r,g,b)*opacity,opacity);}`;
  // liquid-logo defaults; rims use a lower edge so thin bands keep their full width
  const PRM={mark:{patternScale:2,refraction:.015,edge:.4,patternBlur:.005,liquid:.07,fade:.01,zoom:1},
-  frame:{patternScale:2,refraction:.015,edge:.05,patternBlur:.005,liquid:.07,fade:0,zoom:.8}};
+  frame:{patternScale:2,refraction:.015,edge:.05,patternBlur:.005,liquid:.07,fade:0,zoom:.8},
+  plate:{patternScale:2,refraction:.015,edge:.05,patternBlur:.005,liquid:.07,fade:0,zoom:.9}};
  const SPEED=.3,FRAME_MS=32;
  let gl=null,cv=null,U={},ok=false,mode="on",raf=0,last=0,tAcc=0,els=new WeakMap();
  const tex=new Map();
@@ -734,13 +755,26 @@ void main(){
   for(let y=0;y<h;y++){const py=y+.5-hh;for(let x=0;x<w;x++){const pxx=x+.5-hw,a=-sd(pxx,py,hw,hh,r);let v=255;
    if(a>0){const b=sd(pxx,py,hw-t,hh-t,ri);if(b>0){const q=Math.min(1,4*a*b/(t*t));v=Math.round(255*(1-q*q))}}d[y*w+x]=v}}
   return upload(d,w,h)}
+ // A solid sheet with windows cut into it: bevel rises over b px from the outer edge and from every hole, then stays flat
+ function plateMask(w,h,r,b,holes){const d=new Uint8Array(w*h),hw=w/2,hh=h/2;
+  const sd=(x,y,bx,by,R)=>{const qx=Math.abs(x)-bx+R,qy=Math.abs(y)-by+R;return Math.min(Math.max(qx,qy),0)+Math.hypot(Math.max(qx,0),Math.max(qy,0))-R};
+  for(let y=0;y<h;y++){const py=y+.5;for(let x=0;x<w;x++){const px=x+.5;let a=-sd(px-hw,py-hh,hw,hh,r),v=255;
+   if(a>0){for(const o of holes){const e=sd(px-o.cx,py-o.cy,o.hw,o.hh,o.r);if(e<a)a=e;if(a<=0)break}
+    if(a>0){const q=Math.min(1,a/b),u=q*(2-q);v=Math.round(255*(1-u*u))}}d[y*w+x]=v}}
+  return upload(d,w,h)}
+ function holesOf(el,dpr){return [...el.querySelectorAll("[data-lm-hole]")].map(o=>{let x=0,y=0,n=o;while(n&&n!==el){x+=n.offsetLeft;y+=n.offsetTop;n=n.offsetParent}
+  const ins=parseFloat(o.dataset.lmHole)||0,w=o.offsetWidth-2*ins,h=o.offsetHeight-2*ins,cs=getComputedStyle(o).borderTopLeftRadius,rp=parseFloat(cs)||0;
+  const r=Math.max(0,Math.min(Math.min(w,h)/2,/%$/.test(cs)?rp/100*Math.min(o.offsetWidth,o.offsetHeight)-ins:rp-ins));
+  return{cx:Math.round((x+o.offsetWidth/2)*dpr),cy:Math.round((y+o.offsetHeight/2)*dpr),hw:Math.round(w/2*dpr),hh:Math.round(h/2*dpr),r:Math.round(r*dpr)}})}
  function getTex(key,make){let e=tex.get(key);if(e){tex.delete(key);tex.set(key,e);return e}
   e=make();tex.set(key,e);if(tex.size>24){const k=tex.keys().next().value;gl.deleteTexture(tex.get(k));tex.delete(k)}return e}
- function paint(el,t){const type=el.dataset.lm==="mark"?"mark":"frame",dpr=Math.min(2,devicePixelRatio||1);
+ function paint(el,t){const type=el.dataset.lm==="mark"?"mark":el.dataset.lm==="plate"?"plate":"frame",dpr=Math.min(2,devicePixelRatio||1);
   const W=Math.round(el.offsetWidth*dpr),H=Math.round(el.offsetHeight*dpr);if(W<4||H<4)return;
   let st=els.get(el);if(!st||!st.c.isConnected){const c=document.createElement("canvas");c.className="lmc";c.setAttribute("aria-hidden","true");el.appendChild(c);st={c,x:c.getContext("2d")};els.set(el,st)}
   let key="mark";
-  if(type==="frame"){const cs=getComputedStyle(el).borderTopLeftRadius,rp=parseFloat(cs)||0,R=Math.min(W,H)/2,r=Math.min(R,/%$/.test(cs)?rp/100*Math.min(W,H):rp*dpr),th=(parseFloat(el.dataset.lmt)||4)*dpr;
+  if(type==="plate"){const cs=getComputedStyle(el).borderTopLeftRadius,r=Math.min(Math.min(W,H)/2,(parseFloat(cs)||0)*dpr),b=(parseFloat(el.dataset.lmb)||22)*dpr,hs=holesOf(el,dpr);
+   key=`p${W}x${H}r${Math.round(r)}b${b}`+hs.map(o=>`|${o.cx},${o.cy},${o.hw},${o.hh},${o.r}`).join("");st.tex=getTex(key,()=>plateMask(W,H,r,b,hs))}
+  else if(type==="frame"){const cs=getComputedStyle(el).borderTopLeftRadius,rp=parseFloat(cs)||0,R=Math.min(W,H)/2,r=Math.min(R,/%$/.test(cs)?rp/100*Math.min(W,H):rp*dpr),th=(parseFloat(el.dataset.lmt)||4)*dpr;
    key=`f${W}x${H}r${Math.round(r)}t${th}`;st.tex=getTex(key,()=>frameMask(W,H,r,th))}else st.tex=getTex(key,markMask);
   if(st.c.width!==W||st.c.height!==H){st.c.width=W;st.c.height=H}
   if(cv.width<W||cv.height<H){cv.width=Math.max(cv.width,W);cv.height=Math.max(cv.height,H)}
@@ -754,9 +788,9 @@ void main(){
   if(!still&&last&&now-last<FRAME_MS){raf=requestAnimationFrame(frame);return}
   if(!still)tAcc+=Math.min(100,last?now-last:0)*SPEED;last=now;
   let live=false;
-  for(const el of document.querySelectorAll("[data-lm]")){if(!el.getClientRects().length)continue;const r=el.getBoundingClientRect();
+  for(const el of document.querySelectorAll("[data-lm]")){if(!el.getClientRects().length||el.closest("[inert]"))continue;const r=el.getBoundingClientRect();
    if(r.bottom<0||r.top>innerHeight||r.right<0||r.left>innerWidth)continue;live=true;
-   const st=els.get(el);if(still&&st&&st.done&&st.c.isConnected&&st.c.width===Math.round(el.offsetWidth*Math.min(2,devicePixelRatio||1)))continue;
+   const st=els.get(el);if(still&&st&&st.done&&st.c.isConnected&&st.c.width===Math.round(el.offsetWidth*Math.min(2,devicePixelRatio||1))&&st.c.height===Math.round(el.offsetHeight*Math.min(2,devicePixelRatio||1)))continue;
    try{paint(el,tAcc)}catch(e){}}
   if(still||document.hidden||!live){last=0;return}raf=requestAnimationFrame(frame)}
  function kick(){if(ok&&mode!=="off"&&!raf)raf=requestAnimationFrame(frame)}
@@ -800,6 +834,11 @@ function ctx(){const[y,m]=month.split("-").map(Number);
  return{y,m,act,commit,ex,spent,tot,now,cur,dim,dleft,saved,used,left,over,mname,fr,low,daysIn:cur?now.getDate():dim,ci,cdue,cdt,up,cx,cot:sum(cx),coun:sum(cx.filter(e=>!e.re)),
   poolT:S.pools.reduce((a,p)=>a+sum(p.dep),0),poolG:S.pools.reduce((a,p)=>a+p.target,0),g:game()}}
 const expRow=e=>item({cls:e.id===flashId?"flash":"",on:`openExp('${e.id}')`,ic:ic(e.cat),t:esc(e.note||e.cat),s:meta(e.note?e.cat:"",cardName(e.pay)),a:money(e.amt)});
+let heroOpen=false;try{heroOpen=localStorage.getItem("trk-hero")==="1"}catch(e){}
+function toggleHero(){buzz();heroOpen=!heroOpen;try{if(heroOpen)localStorage.setItem("trk-hero","1");else localStorage.removeItem("trk-hero")}catch(e){}
+ const d=$("#heroDet"),b=$("#heroPlate");
+ if(d){d.classList.toggle("open",heroOpen);d.inert=!heroOpen;if(heroOpen)d.removeAttribute("aria-hidden");else d.setAttribute("aria-hidden","true")}
+ if(b){b.classList.toggle("open",heroOpen);b.setAttribute("aria-expanded",heroOpen);b.setAttribute("aria-label",b.getAttribute("aria-label").replace(/(Show|Hide) details$/,(heroOpen?"Hide":"Show")+" details"))}kick()}
 function renderHome(c){const g=c.g,empty=!S.exp.length&&!S.subs.length&&!S.pools.length&&!S.co.length;
  let sub;if(S.budget){sub=c.over?`<b>${money(c.used-S.budget)}</b> over your budget`:c.cur?`<b>${money(c.left/c.dleft)}</b> a day for ${pl(c.dleft,"more day")}`:`left of ${money(S.budget)}`}
  else sub=c.tot?`${pl(c.ex.length,"expense")} and ${pl(c.act.length,"bill")}`:"Nothing logged yet";
@@ -807,11 +846,17 @@ function renderHome(c){const g=c.g,empty=!S.exp.length&&!S.subs.length&&!S.pools
  const lg=[[c.commit,"f1","Bills"],[c.spent,"f2","Spending"],[c.saved,"f3","Saved"]].filter(x=>x[0]>0);
  const alerts=c.cdue.filter(x=>days(x.k.D)<=7).map(x=>{const n=days(x.k.D);return `<button class="alert${n<0?" warn":""}" onclick="openCard('${x.c.id}')"><span class="ic" style="background:var(--card)">💳</span><span class="tx"><b>${esc(x.c.name)} · ${money(x.k.due)}</b><small>${n<0?"Overdue since "+fd(x.k.D):"Card payment due "+when(x.k.D)}</small></span><span class="chev">›</span></button>`}).join("");
  const soon=c.up.filter(x=>days(x.d)<=14).slice(0,3),rec=[...c.ex].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
- const h=`<section class="card hero${c.over?" dry":c.low?" low":""}" data-lm="frame" data-lmt="7"><div class="hrow"><div class="hl">
- <div class="eyebrow">${S.budget?(c.over?"Over budget":"Left to spend"):"Spent in "+c.mname}</div><div class="big${c.over?" neg":""}" id="heroNum"></div><div class="sub">${sub}</div></div>
- ${S.budget?`<div class="orb" data-lm="frame" data-lmt="7" role="img" aria-label="${c.over?"Budget used up":Math.round(c.fr*100)+"% of budget left"}"><canvas class="wv"></canvas><span>${c.over?"0%":Math.round(c.fr*100)+"%"}</span></div>`:""}</div>
+ const pct=S.budget?(c.over?"0%":Math.round(c.fr*100)+"%"):"",olab=S.budget?(c.over?"Budget used up":pct+" of budget left"):"No budget set";
+ const h=`<section class="hero2${c.over?" dry":c.low?" low":""}">
+ <button class="plate main${heroOpen?" open":""}" id="heroPlate" data-lm="plate" data-lmb="26" aria-expanded="${heroOpen}" aria-controls="heroDet" aria-label="${olab}. ${heroOpen?"Hide":"Show"} details" onclick="toggleHero()">
+ <span class="orb xl" data-lm-hole="4" role="img" aria-label="${olab}"><canvas class="wv"></canvas><span class="${!S.budget?"nb":c.over?"ov":c.fr<.45?"lo":""}">${S.budget?pct:"No budget"}</span></span>
+ <span class="grip" aria-hidden="true"><svg viewBox="0 0 24 12"><path d="M3 3l9 6 9-6"/></svg></span></button>
+ <div class="detw${heroOpen?" open":""}" id="heroDet"${heroOpen?"":' inert aria-hidden="true"'}><div class="detin"><div class="detp">
+ <div class="plate dsheet" data-lm="plate" data-lmb="14"><div class="win" data-lm-hole="4">
+ <div class="eyebrow">${S.budget?(c.over?"Over budget":"Left to spend"):"Spent in "+c.mname}</div><div class="big${c.over?" neg":""}" id="heroNum"></div><div class="sub">${sub}</div>
  ${lg.length?`<div class="flow" aria-hidden="true">${seg(c.commit,"f1")}${seg(c.spent,"f2")}${seg(c.saved,"f3")}</div><div class="lg">${lg.map(([v,k,n])=>`<span><i class="${k}"></i>${n}<b>${money(v)}</b></span>`).join("")}</div>`:""}
- <div class="hfoot">${S.budget?`<span class="m">Budget ${money(S.budget)}</span><button class="link" onclick="openBudget()">Edit</button>`:`<button class="btn primary" style="width:100%" onclick="openBudget()">Set a monthly budget</button>`}</div></section>
+ <div class="hfoot">${S.budget?`<span class="m">Budget ${money(S.budget)}</span><button class="link" onclick="openBudget()">Edit</button>`:`<button class="btn primary" style="width:100%" onclick="openBudget()">Set a monthly budget</button>`}</div>
+ </div></div></div></div></div></section>
  ${alerts}
  ${S.budget||g.lv?`<div class="qp">${S.budget?`<button onclick="go('progress')">🔥 ${g.streak}-day streak</button>`:""}<button onclick="go('progress')">💧 Level ${g.lv+1} · ${g.name}</button><button onclick="go('progress')">🏅 ${g.badges.filter(b=>b.on).length}/${g.badges.length}</button></div>`:""}
  ${empty?`<div class="card welcome">${mark()}<h2>Welcome to Clearflow</h2><p class="tagline">See clearly where your money flows.</p><p class="m">Tap <b>+</b> to log what you spend. It takes a few seconds, and your data stays on this phone.</p><div class="row-btns" style="justify-content:center"><button class="btn primary" onclick="openAdd('exp')">Log an expense</button><button class="btn" onclick="openAdd('sub')">Add a bill</button></div></div>`:""}
@@ -1055,7 +1100,7 @@ async function pinOff(){try{await LOCK.pending.catch(()=>{});saveSeq++;LOCK.key=
 // ---------- Delete everything Clearflow stored on this device
 async function wipeAll(){if(!confirm("Delete ALL Clearflow data on this device?\n\nBills, spending, cards, savings and settings will be erased. This can't be undone, so download a backup first if you want to keep it."))return;
  saveSeq++;LOCK.key=null;
- try{["trk",ENC_KEY,"trk-theme","trk-lm"].forEach(k=>localStorage.removeItem(k));sessionStorage.clear()}catch(e){}
+ try{["trk",ENC_KEY,"trk-theme","trk-lm","trk-hero"].forEach(k=>localStorage.removeItem(k));sessionStorage.clear()}catch(e){}
  try{if(window.caches)await Promise.all((await caches.keys()).map(k=>caches.delete(k)))}catch(e){}
  try{if(navigator.serviceWorker)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(r=>r.unregister()))}catch(e){}
  location.replace(location.pathname)}
